@@ -1,0 +1,17 @@
+<!-- login.component.html -->
+<div class="auth-container">
+  <h2>Logowanie</h2>
+  <form [formGroup]="loginForm" (ngSubmit)="login()">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" formControlName="email" />
+    </div>
+    <div class="form-group">
+      <label>Hasło</label>
+      <input type="password" formControlName="password" />
+    </div>
+    <button type="submit" [disabled]="loginForm.invalid">Zaloguj się</button>
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+  </form>
+  <p>Nie masz konta? <a (click)="navigateToRegister()" style="cursor: pointer; color: blue;">Zarejestruj się</a></p>
+</div>

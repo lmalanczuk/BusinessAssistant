@@ -19,6 +19,7 @@ export interface UserDTO {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  password: string | null;
   role: Role | null;
 }
 
@@ -52,4 +53,21 @@ export interface NotificationDTO {
   message: string | null;
   createdAt: string | null;
   userId: string | null;
+}
+
+export interface RegisterRequest {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  password: string | null;
+}
+
+export interface LoginRequest {
+  email: string | null;
+  password: string | null;
+}
+
+export interface AuthResponse {
+  token: string | null;
+  user: UserDTO | null;
 }
