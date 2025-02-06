@@ -1,0 +1,163 @@
+/* Ogólny wygląd sidebaru */
+.sidenav {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #4A90E2;
+  transition: all 0.4s ease-in-out;
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  width: 16rem;
+  height: 100vh;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1rem 0;
+  box-sizing: border-box;
+}
+
+/* Zminimalizowany sidebar */
+.sidenav-collapsed {
+  width: 5rem;
+}
+
+/* Logo */
+.sidenav .logo-container {
+  display: flex;
+  align-items: center; /* Wyrównanie w pionie */
+  justify-content: start; /* Wyrównanie elementów do lewej */
+  padding: 1rem 1rem; /* Dodaje odstępy wewnętrzne */
+  margin-top: 1rem; /* Odstęp od góry strony */
+  width: 100%; /* Dostosowanie szerokości */
+  box-sizing: border-box; /* Upewnia się, że padding nie rozszerza elementu */
+  gap: 1rem; /* Odstęp między ikoną hamburgera a nazwą */
+
+}
+
+
+
+.sidenav .logo-container .logo {
+  background: #fff;
+  text-align: center;
+  width: 3rem;
+  min-width: 3rem;
+  height: 3rem;
+  line-height: 3rem;
+  border-radius: 0.5rem;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  border: none;
+}
+
+.sidenav .logo-container .logo-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 4rem);
+}
+
+
+.sidenav-collapsed .logo-text {
+  opacity: 0;
+}
+
+/* Przycisk zamykania */
+.sidenav .logo-container .btn-close {
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.sidenav .logo-container .btn-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Nawigacja */
+.sidenav-nav {
+  list-style: none;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  margin-top: 2rem;
+}
+
+.sidenav-nav .sidenav-nav-item {
+  width: 90%;
+  margin-bottom: 0.8rem;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link {
+  display: flex;
+  align-items: center;
+  height: 3rem;
+  color: #f3f3f3;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link .sidenav-link-icon {
+  font-size: 22px;
+  width: 2rem;
+  min-width: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link .sidenav-link-text {
+  margin-left: 1rem;
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+.sidenav-collapsed .sidenav-nav .sidenav-nav-item .sidenav-nav-link .sidenav-link-text {
+  opacity: 0;
+}
+
+/* Efekt hover */
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link:hover .sidenav-link-icon {
+  transform: scale(1.1);
+}
+
+/* Aktywny link */
+.active {
+  background-color: #ffffff;
+  color: #012a5b !important;
+}
+
+.active .sidenav-link-icon,
+.active .sidenav-link-text {
+  color: #012a5b !important;
+}
+
+/* Dodatkowe poprawki dla responsywności */
+@media (max-width: 768px) {
+  .sidenav {
+    padding: 0.5rem 0;
+  }
+
+  .sidenav .logo-container {
+    margin-top: 0.5rem;
+  }
+
+  .sidenav-nav {
+    margin-top: 1rem;
+  }
+}
