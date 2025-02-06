@@ -13,31 +13,42 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+//        http
+//                .authorizeHttpRequests((requests) -> requests
+//                .requestMatchers("/").permitAll()
+//                .anyRequest().authenticated()
+//                )
+//                .formLogin((form) -> form
+//                        .loginPage("/login")
+//                        .permitAll()
+//                )
+//                .logout((logout) -> logout.permitAll())
+//                .exceptionHandling((exceptionHandling) -> exceptionHandling
+//                        .accessDeniedPage("/access-denied"));
+//        return http.build();
+//    }
+//
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//      UserDetails user =
+//        User.withDefaultPasswordEncoder()
+//          .username("user")
+//          .password("password")
+//          .roles("ADMIN")
+//          .build();
+//        return new InMemoryUserDetailsManager(user);
+//    }
+     @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/").permitAll()
-                .anyRequest().authenticated()
-                )
-                .formLogin((form) -> form
-                        .loginPage("/login")
-                        .permitAll()
-                )
-                .logout((logout) -> logout.permitAll())
-                .exceptionHandling((exceptionHandling) -> exceptionHandling
-                        .accessDeniedPage("/access-denied"));
-        return http.build();
-    }
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()
+            )
+            .csrf(csrf -> csrf.disable())  // Nowy sposób wyłączania CSRF
+            .httpBasic(httpBasic -> httpBasic.disable());  // Nowy sposób wyłączania HTTP Basic
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-      UserDetails user =
-        User.withDefaultPasswordEncoder()
-          .username("user")
-          .password("password")
-          .roles("ADMIN")
-          .build();
-        return new InMemoryUserDetailsManager(user);
+        return http.build();
     }
 }

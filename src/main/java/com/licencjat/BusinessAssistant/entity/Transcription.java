@@ -14,7 +14,7 @@ public class Transcription {
     @GeneratedValue
     private UUID id;
     @OneToOne
-    @JoinColumn(name = "meeting_id", referencedColumnName = "id", unique = true, nullable = false)
+    @JoinColumn(name = "meeting_id", referencedColumnName = "id", nullable = false)
     private Meeting meetingId;
 
     @Column(name = "transcription_text", columnDefinition = "TEXT")
