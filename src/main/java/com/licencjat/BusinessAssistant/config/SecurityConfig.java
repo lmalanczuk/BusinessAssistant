@@ -46,8 +46,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll()
             )
-            .csrf(csrf -> csrf.disable())  // Nowy sposób wyłączania CSRF
-            .httpBasic(httpBasic -> httpBasic.disable());  // Nowy sposób wyłączania HTTP Basic
+            .csrf(csrf -> csrf.disable())
+            .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }

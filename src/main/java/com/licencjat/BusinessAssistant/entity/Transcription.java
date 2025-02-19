@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Data
+@Table(name="Transcription")
 public class Transcription {
 
     @Id

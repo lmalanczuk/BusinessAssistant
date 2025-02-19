@@ -118,7 +118,6 @@ private String formatMarkdownSummary(String rawSummary) {
         UWAGA:
         - Używaj wyłącznie języka polskiego
         - Zachowaj formalny ton biznesowy
-        - Unikaj technicznego żargonu
         - Nie używaj tabel
         - Wszystkie sekcje mają być w formie punktowanej listy
         - Maksymalna długość podsumowania: %d znaków
