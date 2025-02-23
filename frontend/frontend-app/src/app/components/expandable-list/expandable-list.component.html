@@ -1,0 +1,19 @@
+<div class="expandable-item">
+  <div class="header">
+    <h3 class="title">{{ title }}</h3>
+    <p class="date">{{ date }}</p>
+  </div>
+
+  <!-- Krótki podgląd tekstu -->
+  <div class="content-preview" *ngIf="!isExpanded" [innerHTML]="content | slice:0:300">
+  </div>
+
+  <!-- Pełna treść -->
+  <div class="full-content" *ngIf="isExpanded" [innerHTML]="content">
+  </div>
+
+  <!-- Przycisk rozwijania/zwijania -->
+  <button class="toggle-button" (click)="toggleExpand($event)">
+    {{ isExpanded ? 'See less' : 'See more' }}
+  </button>
+</div>

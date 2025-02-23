@@ -1,1 +1,8 @@
-<p>transcriptions</p>
+<h2>Transcriptions</h2>
+<div *ngFor="let transcription of transcriptions">
+  <app-expandable-list
+    [title]="transcription.title"
+    [date]="transcription.date"
+    [content]="transcription.content"
+  ></app-expandable-list>
+</div>

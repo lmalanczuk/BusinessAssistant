@@ -1,0 +1,9 @@
+<h2>Summaries</h2>
+<div *ngFor="let summary of summaries">
+  <app-expandable-list
+    [title]="summary.title"
+    [date]="summary.date"
+    [content]="summary.content"
+  ></app-expandable-list>
+</div>
+

@@ -5,6 +5,7 @@ import {TranscriptionsComponent} from "./components/transcriptions/transcription
 import {SettingsComponent} from "./components/settings/settings.component";
 import {LoginComponent} from "./components/login/login.component";
 import {RegisterComponent} from "./components/register/register.component";
+import {SummariesComponent} from "./components/summaries/summaries.component";
 
 export const routes: Routes = [
   {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
@@ -12,6 +13,7 @@ export const routes: Routes = [
   {path: 'dashboard', component: DashboardComponent},
   {path: 'calendar', component: CalendarComponent},
   {path: 'transcriptions', component: TranscriptionsComponent},
+  {path: 'summaries', component: SummariesComponent},
   {path: 'settings', component: SettingsComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent }

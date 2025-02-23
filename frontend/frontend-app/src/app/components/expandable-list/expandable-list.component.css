@@ -1,0 +1,107 @@
+.expandable-item {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  max-width: 80%;  /* Zmniejszenie szerokości */
+  margin-left: 0;  /* Brak marginesu z lewej strony */
+  margin-right: auto;  /* Margines po prawej stronie */
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.content-preview, .full-content {
+  margin-top: 10px;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;  /* Zachowuje entery i spacje */
+  word-wrap: break-word;  /* Przenosi długie wyrazy */
+}
+
+h3 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+ul, ol {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+.expandable-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+}
+
+.date {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.content-preview {
+  margin-top: 10px;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.full-content {
+  margin-top: 10px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.toggle-button {
+  margin-top: 15px;
+  background: #4A90E2;  /* Dopasowanie koloru */
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień */
+}
+
+.toggle-button:hover {
+  background: #3C3C3C;  /* Kontrastowy kolor na hover */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+  .expandable-item {
+    padding: 15px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .date {
+    margin-top: 5px;
+  }
+}
