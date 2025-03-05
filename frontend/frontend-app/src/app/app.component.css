@@ -1,0 +1,17 @@
+.body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  width: calc(100% - 16rem); /* Dopasowanie do sidebaru */
+  margin-left: 16rem;
+  z-index: 0;
+  position: relative;
+  top: 0;
+  transition: all 0.5s ease;
+  padding: 3rem;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Wyłącz poziome przewijanie */
+}
+
+.body-trimmed {
+  width: calc(100% - 5rem); /* Dla zminimalizowanego sidebaru */
+  margin-left: 5rem;
+}

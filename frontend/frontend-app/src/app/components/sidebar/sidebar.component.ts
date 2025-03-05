@@ -25,8 +25,13 @@ export class SidebarComponent {
     },
     {
       routeLink: 'transcriptions',
-      icon: 'fal fa-pen',
+      icon: 'fal fa-microphone',
       label: 'Transcriptions',
+    },
+    {
+      routeLink: 'summaries',
+      icon: 'fal fa-pen',
+      label: 'Summaries',
     },
     {
       routeLink: 'settings',
