@@ -44,6 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/zoom/oauth/callback", "/api/zoom/webhook").permitAll()
                 .anyRequest().permitAll()
             )
             .csrf(csrf -> csrf.disable())

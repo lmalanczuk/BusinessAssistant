@@ -34,4 +34,16 @@ public class Meeting {
             joinColumns = @JoinColumn(name = "meeting_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<Users> participants;
+
+    @Column(name = "zoom_meeting_id")
+    private String zoomMeetingId;
+
+    @Column(name = "zoom_host_id")
+    private String zoomHostId;
+
+    @Column(name = "zoom_join_url")
+    private String zoomJoinUrl;
+
+    @Column(name = "zoom_recording_url")
+    private String zoomRecordingUrl;
 }

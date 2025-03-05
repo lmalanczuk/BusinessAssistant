@@ -6,7 +6,7 @@ import com.licencjat.BusinessAssistant.model.response.SummaryResponse;
 public interface SummarizationService {
 
     /**
-     * Generuje podsumowanie spotkania na podstawie dostarczonego tekstu transkrypcji.
+     * Generuje podsumowanie spotkania na podstawie tekstu transkrypcji.
      *
      * @param request Obiekt zawierający tekst do podsumowania
      * @return Wygenerowane podsumowanie w formie obiektu SummaryResponse

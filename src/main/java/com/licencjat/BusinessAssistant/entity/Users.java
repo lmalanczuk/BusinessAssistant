@@ -4,6 +4,7 @@ import com.licencjat.BusinessAssistant.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,6 +37,18 @@ public class Users {
 
     @ManyToMany(mappedBy = "participants")
     private Set<Meeting> meetings;
+
+    @Column(name = "zoom_user_id")
+    private String zoomUserId;
+
+    @Column(name = "zoom_access_token")
+    private String zoomAccessToken;
+
+    @Column(name = "zoom_refresh_token")
+    private String zoomRefreshToken;
+
+    @Column(name = "zoom_token_expiry")
+    private LocalDateTime zoomTokenExpiry;
 
 
     public Users( String firstName, String lastName, String email, String username, String password, Role role, Set<Meeting> meetings) {
