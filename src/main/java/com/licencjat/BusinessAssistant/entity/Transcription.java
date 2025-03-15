@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Data
 @Table(name="Transcription")
+@Data
 public class Transcription {
 
     @Id
@@ -22,4 +22,5 @@ public class Transcription {
     private String transcriptionText;
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
+
 }

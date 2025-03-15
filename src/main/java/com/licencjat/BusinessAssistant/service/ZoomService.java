@@ -1,56 +1,31 @@
 package com.licencjat.BusinessAssistant.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.licencjat.BusinessAssistant.model.response.ZoomMeetingResponse;
-import com.licencjat.BusinessAssistant.model.response.ZoomTokenResponse;
+import com.licencjat.BusinessAssistant.entity.Meeting;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ZoomService {
+    /**
+     * Przetwarza webhook z zooma
+     * @param webhookData
+     */
+    void processWebhook(Map<String, Object> webhookData);
 
     /**
-     * Przetwarza callback OAuth z Zoom i wymienia kod autoryzacyjny na tokeny
-     *
-     * @param code Kod autoryzacyjny z Zoom
-     * @param userId UUID użytkownika w systemie
-     * @return Odpowiedź z tokenami
+     * Tworzy spotkanie i zapisuje w bazie danych
+     * @param title
+     * @param startTime
+     * @param durationMinutes
+     * @param hostUserId
+     * @return
      */
-    ZoomTokenResponse handleOAuthCallback(String code, String userId);
+    Meeting createZoomMeeting(String title, LocalDateTime startTime, int durationMinutes, UUID hostUserId);
 
     /**
-     * Odświeża token dostępu jeśli jest bliski wygaśnięcia
-     *
-     * @param userId UUID użytkownika
-     * @return Nowe tokeny lub null jeśli odświeżenie nie było potrzebne
+     * Pobiera nagrania dla okreslonego spotkania
+     * @param meetingId
      */
-    ZoomTokenResponse refreshTokenIfNeeded(UUID userId);
-
-    /**
-     * Tworzy spotkanie w Zoom
-     *
-     * @param userId UUID użytkownika
-     * @param title Tytuł spotkania
-     * @param startTime Czas rozpoczęcia
-     * @param durationMinutes Czas trwania w minutach
-     * @return Odpowiedź z danymi utworzonego spotkania
-     */
-    ZoomMeetingResponse createZoomMeeting(UUID userId, String title, LocalDateTime startTime, int durationMinutes);
-
-    /**
-     * Pobiera listę spotkań użytkownika z Zoom
-     *
-     * @param userId UUID użytkownika
-     * @return Dane spotkań w formacie JsonNode
-     */
-    JsonNode listUserMeetings(UUID userId);
-
-    /**
-     * Pobiera nagrania z danego spotkania Zoom
-     *
-     * @param userId UUID użytkownika
-     * @param meetingId ID spotkania w Zoom
-     * @return Dane nagrań w formacie JsonNode
-     */
-    JsonNode getMeetingRecordings(UUID userId, String meetingId);
+    void downloadRecordingsForMeeting(String meetingId);
 }
