@@ -1,6 +1,13 @@
 package com.licencjat.BusinessAssistant.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.licencjat.BusinessAssistant.entity.Users;
+import com.licencjat.BusinessAssistant.model.zoom.ZoomAuthResponse;
+import com.licencjat.BusinessAssistant.repository.UserRepository;
+import com.licencjat.BusinessAssistant.security.UserPrincipal;
+import com.licencjat.BusinessAssistant.util.JwtTokenProvider;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import com.licencjat.BusinessAssistant.client.ZoomClient;
 import com.licencjat.BusinessAssistant.entity.Meeting;
 import com.licencjat.BusinessAssistant.model.MeetingDTO;
@@ -13,11 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -27,6 +36,8 @@ public class ZoomController {
 
     private final ZoomClient zoomClient;
     private final ZoomService zoomService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Value("${zoom.redirect-uri}")
     private String redirectUri;
@@ -34,9 +45,11 @@ public class ZoomController {
     @Value("${zoom.client-id}")
     private String clientId;
 
-    public ZoomController(ZoomClient zoomClient, ZoomService zoomService) {
+    public ZoomController(ZoomClient zoomClient, ZoomService zoomService, JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.zoomClient = zoomClient;
         this.zoomService = zoomService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -164,6 +177,62 @@ public class ZoomController {
                     .body(new ApiResponse(false, "Nie można pobrać nagrań: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/connect")
+    @PreAuthorize("isAuthenticated()")
+    public RedirectView connectZoomAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        UUID userId = userPrincipal.getId();
+
+        String state = jwtTokenProvider.generateZoomStateToken(userId);
+
+        String authUrl = "https://zoom.us/oauth/authorize" +
+                "?response_type=code" +
+                "&client_id=" + clientId +
+                "&redirect_uri=" + redirectUri +
+                "&state=" + state;
+
+        return new RedirectView(authUrl);
+    }
+
+ @GetMapping("/oauth/callback")
+    public ResponseEntity<ApiResponse> oauthCallback(@RequestParam String code, @RequestParam String state) {
+        try {
+            // Zweryfikuj state token i pobierz ID użytkownika
+            UUID userId = jwtTokenProvider.getUserIdFromZoomStateToken(state);
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(new ApiResponse(false, "Nieprawidłowy token state"));
+            }
+
+            // Pobierz tokeny z Zoom
+            ZoomAuthResponse authResponse = zoomClient.exchangeCodeForTokens(code, redirectUri);
+
+            // Pobierz informacje o użytkowniku Zoom
+            JsonNode userInfo = zoomClient.getUserInfo(authResponse.getAccessToken());
+            String zoomUserId = userInfo.get("id").asText();
+
+            // Zaktualizuj użytkownika w bazie
+            Optional<Users> userOpt = userRepository.findById(userId);
+            if (userOpt.isPresent()) {
+                Users user = userOpt.get();
+                user.setZoomUserId(zoomUserId);
+                user.setZoomAccessToken(authResponse.getAccessToken());
+                user.setZoomRefreshToken(authResponse.getRefreshToken());
+                user.setZoomTokenExpiry(LocalDateTime.now().plusSeconds(authResponse.getExpiresIn()));
+                userRepository.save(user);
+
+                return ResponseEntity.ok(new ApiResponse(true, "Konto Zoom zostało pomyślnie połączone"));
+            } else {
+                return ResponseEntity.badRequest().body(new ApiResponse(false, "Nie znaleziono użytkownika"));
+            }
+        } catch (Exception e) {
+            logger.error("Błąd podczas łączenia konta Zoom", e);
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Błąd podczas łączenia konta Zoom: " + e.getMessage()));
+        }
+    }
+
+
 
     /**
      * Konwertuje obiekt Meeting na MeetingDTO

@@ -2,7 +2,8 @@ package com.licencjat.BusinessAssistant.entity;
 
 import com.licencjat.BusinessAssistant.entity.enums.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;

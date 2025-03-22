@@ -3,7 +3,7 @@ package com.licencjat.BusinessAssistant.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.Http;
+import com.licencjat.BusinessAssistant.model.zoom.ZoomAuthResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Map;
 
 @Component
@@ -42,32 +42,38 @@ public class ZoomClient {
     }
 
 
-    public void exchangeCodeForTokens(String authorizationCode, String redirectUri){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(zoomClientId, zoomClientSecret);
+    public ZoomAuthResponse exchangeCodeForTokens(String authorizationCode, String redirectUri) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    headers.setBasicAuth(zoomClientId, zoomClientSecret);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("code", authorizationCode);
-        body.add("redirect_uri", redirectUri);
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("grant_type", "authorization_code");
+    body.add("code", authorizationCode);
+    body.add("redirect_uri", redirectUri);
 
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+    HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
-        try{
-            ResponseEntity<String> response = restTemplate.exchange(
-                ZOOM_OAUTH_URL,
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+                ZOOM_OAUTH_TOKEN_URL,
                 HttpMethod.POST,
                 entity,
                 String.class
-            );
-            processTokenResponse(response.getBody());
-            logger.info("Tokens exchanged successfully");
-        } catch (Exception e){
-            logger.error("Error exchanging code for tokens: {}", e.getMessage());
-            throw new RuntimeException("Failed to exchange code for tokens", e);
-        }
+        );
+
+        ZoomAuthResponse authResponse = objectMapper.readValue(response.getBody(), ZoomAuthResponse.class);
+        this.accessToken = authResponse.getAccessToken();
+        this.refreshToken = authResponse.getRefreshToken();
+        this.tokenExpiry = Instant.now().plusSeconds(authResponse.getExpiresIn());
+
+        logger.info("Successfully exchanged authorization code for access token");
+        return authResponse;
+    } catch (Exception e) {
+        logger.error("Error exchanging authorization code for tokens", e);
+        throw new RuntimeException("Failed to exchange authorization code for tokens", e);
     }
+}
 
     public void refreshAccessToken() {
         HttpHeaders headers = new HttpHeaders();
@@ -211,5 +217,29 @@ public class ZoomClient {
             refreshAccessToken();
         }
     }
+
+    /**
+ * Pobiera informacje o użytkowniku Zoom
+ */
+public JsonNode getUserInfo(String accessToken) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(accessToken);
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    String url = ZOOM_API_BASE_URL + "/users/me";
+
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Błąd podczas pobierania informacji o użytkowniku Zoom", e);
+        throw new RuntimeException("Nie udało się pobrać informacji o użytkowniku Zoom", e);
+    }
+}
 
 }

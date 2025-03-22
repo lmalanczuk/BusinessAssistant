@@ -3,7 +3,7 @@ package com.licencjat.BusinessAssistant.entity;
 import com.licencjat.BusinessAssistant.entity.enums.Platform;
 import com.licencjat.BusinessAssistant.entity.enums.Status;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Set;

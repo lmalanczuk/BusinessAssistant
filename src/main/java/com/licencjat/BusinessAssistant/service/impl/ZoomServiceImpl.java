@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.licencjat.BusinessAssistant.client.ZoomClient;
 import com.licencjat.BusinessAssistant.entity.Meeting;
+import com.licencjat.BusinessAssistant.entity.Users;
+import com.licencjat.BusinessAssistant.entity.enums.Platform;
+import com.licencjat.BusinessAssistant.entity.enums.Status;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomMeetingRequest;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomMeetingSettings;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomRecordingFile;
@@ -17,10 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import com.licencjat.BusinessAssistant.entity.Users;
-import com.licencjat.BusinessAssistant.entity.enums.Platform;
-import com.licencjat.BusinessAssistant.entity.enums.Status;
 
 import java.io.IOException;
 import java.net.URI;

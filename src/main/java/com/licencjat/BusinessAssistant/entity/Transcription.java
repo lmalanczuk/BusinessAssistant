@@ -1,7 +1,7 @@
 package com.licencjat.BusinessAssistant.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
