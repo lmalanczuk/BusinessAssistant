@@ -7,6 +7,9 @@ import com.licencjat.BusinessAssistant.entity.Meeting;
 import com.licencjat.BusinessAssistant.entity.Users;
 import com.licencjat.BusinessAssistant.entity.enums.Platform;
 import com.licencjat.BusinessAssistant.entity.enums.Status;
+import com.licencjat.BusinessAssistant.exception.RecordingException;
+import com.licencjat.BusinessAssistant.exception.ResourceNotFoundException;
+import com.licencjat.BusinessAssistant.exception.ZoomApiException;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomMeetingRequest;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomMeetingSettings;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomRecordingFile;
@@ -29,6 +32,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -135,47 +139,179 @@ public class ZoomServiceImpl implements ZoomService {
             logger.warn("Nie znaleziono spotkania o id: {}", meetingId);
         }
     }
+    @Override
+public Meeting startMeeting(String meetingId) {
+    try {
+        // Znajdź spotkanie w bazie danych
+        Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
 
+        if (!meetingOptional.isPresent()) {
+            throw new ResourceNotFoundException("Nie znaleziono spotkania o ID: " + meetingId);
+        }
+
+        Meeting meeting = meetingOptional.get();
+
+        // Wywołaj API Zoom do rozpoczęcia spotkania
+        zoomClient.startMeeting(meetingId);
+
+        // Aktualizuj status spotkania w bazie danych
+        meeting.setStatus(Status.ONGOING);
+        meeting.setStartTime(LocalDateTime.now());
+
+        return meetingRepository.save(meeting);
+    } catch (ResourceNotFoundException e) {
+        // Przekaż wyjątek dalej
+        throw e;
+    } catch (ZoomApiException e) {
+        // Przekaż wyjątek dalej
+        throw e;
+    } catch (Exception e) {
+        logger.error("Błąd podczas rozpoczynania spotkania: {}", e.getMessage());
+        throw new ZoomApiException("Nie można rozpocząć spotkania", e);
+    }
+}
+
+@Override
+public Meeting endMeeting(String meetingId) {
+    try {
+        // Znajdź spotkanie w bazie danych
+        Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+
+        if (!meetingOptional.isPresent()) {
+            throw new IllegalArgumentException("Nie znaleziono spotkania o ID: " + meetingId);
+        }
+
+        Meeting meeting = meetingOptional.get();
+
+        // Wywołaj API Zoom do zakończenia spotkania
+        zoomClient.endMeeting(meetingId);
+
+        // Aktualizuj status spotkania w bazie danych
+        meeting.setStatus(Status.COMPLETED);
+        meeting.setEndTime(LocalDateTime.now());
+
+        return meetingRepository.save(meeting);
+    } catch (Exception e) {
+        logger.error("Błąd podczas kończenia spotkania: {}", e.getMessage());
+        throw new RuntimeException("Nie można zakończyć spotkania", e);
+    }
+}
+
+@Override
+public JsonNode getMeetingParticipants(String meetingId) {
+    try {
+        // Sprawdź, czy spotkanie istnieje w bazie danych
+        Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+
+        if (!meetingOptional.isPresent()) {
+            throw new IllegalArgumentException("Nie znaleziono spotkania o ID: " + meetingId);
+        }
+
+        // Wywołaj API Zoom do pobrania uczestników
+        return zoomClient.getMeetingParticipants(meetingId);
+    } catch (Exception e) {
+        logger.error("Błąd podczas pobierania uczestników spotkania: {}", e.getMessage());
+        throw new RuntimeException("Nie można pobrać uczestników spotkania", e);
+    }
+}
+
+@Override
+public JsonNode inviteToMeeting(String meetingId, List<String> emails) {
+    try {
+        // Sprawdź, czy spotkanie istnieje w bazie danych
+        Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+
+        if (!meetingOptional.isPresent()) {
+            throw new IllegalArgumentException("Nie znaleziono spotkania o ID: " + meetingId);
+        }
+
+        // Wywołaj API Zoom do wysłania zaproszeń
+        return zoomClient.inviteToMeeting(meetingId, emails);
+    } catch (Exception e) {
+        logger.error("Błąd podczas wysyłania zaproszeń: {}", e.getMessage());
+        throw new RuntimeException("Nie można wysłać zaproszeń", e);
+    }
+}
+
+@Override
+public Meeting updateMeeting(String meetingId, Map<String, Object> updateData) {
+    try {
+        // Znajdź spotkanie w bazie danych
+        Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+
+        if (!meetingOptional.isPresent()) {
+            throw new IllegalArgumentException("Nie znaleziono spotkania o ID: " + meetingId);
+        }
+
+        Meeting meeting = meetingOptional.get();
+
+        // Wywołaj API Zoom do aktualizacji spotkania
+        JsonNode updatedMeetingData = zoomClient.updateMeeting(meetingId, updateData);
+
+        // Aktualizuj dane spotkania w bazie danych
+        if (updateData.containsKey("topic")) {
+            meeting.setTitle((String) updateData.get("topic"));
+        }
+
+        if (updateData.containsKey("start_time")) {
+            String startTimeStr = (String) updateData.get("start_time");
+            meeting.setStartTime(LocalDateTime.parse(startTimeStr, DateTimeFormatter.ISO_DATE_TIME));
+        }
+
+        if (updateData.containsKey("duration")) {
+            Integer durationMinutes = (Integer) updateData.get("duration");
+            meeting.setEndTime(meeting.getStartTime().plusMinutes(durationMinutes));
+        }
+
+        return meetingRepository.save(meeting);
+    } catch (Exception e) {
+        logger.error("Błąd podczas aktualizacji spotkania: {}", e.getMessage());
+        throw new RuntimeException("Nie można zaktualizować spotkania", e);
+    }
+}
     /**
      * Obsługa zakończenia nagrania
      */
-    private void handleRecordingCompleted(ZoomWebhookEvent event){
-        String meetingId = event.getPayload().getObject().getId();
-        logger.info("Recording completed for meeting: {}", meetingId);
-        try{
-            JsonNode recordingData = zoomClient.getMeetingRecordings(meetingId);
-            ZoomRecordingResponse recordingResponse = objectMapper.treeToValue(
-                    recordingData,
-                    ZoomRecordingResponse.class
-            );
-            Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
-            if(meetingOptional.isPresent()){
-                Meeting meeting = meetingOptional.get();
-
-                for(ZoomRecordingFile file : recordingResponse.getRecordingFiles()){
-                    if("TRANSCRIPT".equals(file.getRecordingType()) || "AUDIO_ONLY".equals(file.getRecordingType())){
-                        String downloadUrl = file.getDownloadUrl();
-                        String fileName = String.format("%s_%s.%s",
-                                meeting.getId(),
-                                file.getRecordingType().toLowerCase(),
-                                getFileExtension(file.getFileType()));
-                        Path filePath = downloadFile(downloadUrl, fileName);
-
-                        if("AUDIO_ONLY".equals(file.getRecordingType())) {
-                            meeting.setZoomRecordingUrl(filePath.toString());
-                            meetingRepository.save(meeting);
-                            logger.info("Zaktualizowano nagranie audio dla spotkania {}: {}", meetingId, filePath);
-                        }
-                    }
-                }
-            }else {
-                logger.warn("Nie znaleziono spotkania o id: {}", meetingId);
-            }
-        } catch(Exception e){
-            logger.error("Error processing recording", e);
-            throw new RuntimeException("Błąd przetwarzania nagrania");
+    private void handleRecordingCompleted(ZoomWebhookEvent event) {
+    String meetingId = event.getPayload().getObject().getId();
+    logger.info("Recording completed for meeting: {}", meetingId);
+    try {
+        JsonNode recordingData = zoomClient.getMeetingRecordings(meetingId);
+        ZoomRecordingResponse recordingResponse = objectMapper.treeToValue(
+                recordingData,
+                ZoomRecordingResponse.class
+        );
+        Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+        if (!meetingOptional.isPresent()) {
+            throw new ResourceNotFoundException("Nie znaleziono spotkania o id: " + meetingId);
         }
+
+        Meeting meeting = meetingOptional.get();
+
+        for (ZoomRecordingFile file : recordingResponse.getRecordingFiles()) {
+            if ("TRANSCRIPT".equals(file.getRecordingType()) || "AUDIO_ONLY".equals(file.getRecordingType())) {
+                String downloadUrl = file.getDownloadUrl();
+                String fileName = String.format("%s_%s.%s",
+                        meeting.getId(),
+                        file.getRecordingType().toLowerCase(),
+                        getFileExtension(file.getFileType()));
+                Path filePath = downloadFile(downloadUrl, fileName);
+
+                if ("AUDIO_ONLY".equals(file.getRecordingType())) {
+                    meeting.setZoomRecordingUrl(filePath.toString());
+                    meetingRepository.save(meeting);
+                    logger.info("Zaktualizowano nagranie audio dla spotkania {}: {}", meetingId, filePath);
+                }
+            }
+        }
+    } catch (ResourceNotFoundException e) {
+        // Przekaż wyjątek dalej
+        throw e;
+    } catch (Exception e) {
+        logger.error("Error processing recording", e);
+        throw new RecordingException("Błąd przetwarzania nagrania", e);
     }
+}
     @Override
     public Meeting createZoomMeeting(String title, LocalDateTime startTime, int durationMinutes, UUID hostUserId){
         try{

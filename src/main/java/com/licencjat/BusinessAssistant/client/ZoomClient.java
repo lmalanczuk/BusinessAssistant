@@ -3,6 +3,8 @@ package com.licencjat.BusinessAssistant.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.licencjat.BusinessAssistant.exception.AuthenticationException;
+import com.licencjat.BusinessAssistant.exception.ZoomApiException;
 import com.licencjat.BusinessAssistant.model.zoom.ZoomAuthResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -56,7 +60,7 @@ public class ZoomClient {
 
     try {
         ResponseEntity<String> response = restTemplate.exchange(
-                ZOOM_OAUTH_TOKEN_URL,
+                ZOOM_OAUTH_URL,
                 HttpMethod.POST,
                 entity,
                 String.class
@@ -65,7 +69,7 @@ public class ZoomClient {
         ZoomAuthResponse authResponse = objectMapper.readValue(response.getBody(), ZoomAuthResponse.class);
         this.accessToken = authResponse.getAccessToken();
         this.refreshToken = authResponse.getRefreshToken();
-        this.tokenExpiry = Instant.now().plusSeconds(authResponse.getExpiresIn());
+        this.tokenExpiryTime = Instant.now().plusSeconds(authResponse.getExpiresIn());
 
         logger.info("Successfully exchanged authorization code for access token");
         return authResponse;
@@ -76,51 +80,51 @@ public class ZoomClient {
 }
 
     public void refreshAccessToken() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(zoomClientId, zoomClientSecret);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    headers.setBasicAuth(zoomClientId, zoomClientSecret);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "refresh_token");
-        body.add("refresh_token", refreshToken);
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("grant_type", "refresh_token");
+    body.add("refresh_token", refreshToken);
 
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+    HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
-        try{
-            ResponseEntity<String> response = restTemplate.exchange(
-                ZOOM_OAUTH_URL,
-                HttpMethod.POST,
-                entity,
-                String.class
-            );
-            processTokenResponse(response.getBody());
-            logger.info("Access token refreshed successfully");
-        }catch (Exception e){
-            logger.error("Error refreshing access token: {}", e.getMessage());
-            throw new RuntimeException("Failed to refresh access token", e);
-        }
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            ZOOM_OAUTH_URL,
+            HttpMethod.POST,
+            entity,
+            String.class
+        );
+        processTokenResponse(response.getBody());
+        logger.info("Access token refreshed successfully");
+    } catch (Exception e) {
+        logger.error("Error refreshing access token: {}", e.getMessage());
+        throw new AuthenticationException("Failed to refresh access token", e);
     }
+}
 
-    public JsonNode getMeeting(String meetingId){
-        ensureValidToken();
-        HttpHeaders headers = createAuthenticatedHeaders();
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+    public JsonNode getMeeting(String meetingId) {
+    ensureValidToken();
+    HttpHeaders headers = createAuthenticatedHeaders();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId;
+    String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId;
 
-        try{
-            ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                String.class
-            );
-            return objectMapper.readTree(response.getBody());
-        } catch(Exception e){
-            logger.error("Error getting meeting: {}", e.getMessage());
-            throw new RuntimeException("Failed to get meeting", e);
-        }
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            entity,
+            String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Error getting meeting: {}", e.getMessage());
+        throw new ZoomApiException("Failed to get meeting information", e);
     }
+}
 
     public JsonNode createMeeting(Map<String, Object> meetingDetails, String userId) {
         ensureValidToken();
@@ -213,9 +217,9 @@ public class ZoomClient {
     }
 
     private void ensureValidToken(){
-        if(accessToken == null || tokenExpiryTime.isAfter(tokenExpiryTime.minusSeconds(60))){
-            refreshAccessToken();
-        }
+        if(accessToken == null || Instant.now().isAfter(tokenExpiryTime.minusSeconds(60))){
+    refreshAccessToken();
+}
     }
 
     /**
@@ -241,5 +245,148 @@ public JsonNode getUserInfo(String accessToken) {
         throw new RuntimeException("Nie udało się pobrać informacji o użytkowniku Zoom", e);
     }
 }
+/**
+ * Rozpoczyna spotkanie Zoom
+ * @param meetingId ID spotkania
+ * @return JsonNode z odpowiedzią API
+ */
+public JsonNode startMeeting(String meetingId) {
+    ensureValidToken();
+    HttpHeaders headers = createAuthenticatedHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
 
+    Map<String, String> requestBody = Map.of("action", "start");
+    HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+
+    String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId + "/status";
+
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.PUT,
+            entity,
+            String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Error starting meeting: {}", e.getMessage());
+        throw new RuntimeException("Failed to start meeting", e);
+    }
+}
+
+/**
+ * Kończy spotkanie Zoom
+ * @param meetingId ID spotkania
+ * @return JsonNode z odpowiedzią API
+ */
+public JsonNode endMeeting(String meetingId) {
+    ensureValidToken();
+    HttpHeaders headers = createAuthenticatedHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    Map<String, String> requestBody = Map.of("action", "end");
+    HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+
+    String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId + "/status";
+
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.PUT,
+            entity,
+            String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Error ending meeting: {}", e.getMessage());
+        throw new RuntimeException("Failed to end meeting", e);
+    }
+}
+
+/**
+ * Pobiera uczestników spotkania
+ * @param meetingId ID spotkania
+ * @return JsonNode z listą uczestników
+ */
+public JsonNode getMeetingParticipants(String meetingId) {
+    ensureValidToken();
+    HttpHeaders headers = createAuthenticatedHeaders();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId + "/participants";
+
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            entity,
+            String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Error getting meeting participants: {}", e.getMessage());
+        throw new RuntimeException("Failed to get meeting participants", e);
+    }
+}
+
+/**
+ * Wysyła zaproszenia do spotkania Zoom
+ * @param meetingId ID spotkania
+ * @param emails Lista adresów email
+ * @return JsonNode z odpowiedzią API
+ */
+public JsonNode inviteToMeeting(String meetingId, List<String> emails) {
+    ensureValidToken();
+    HttpHeaders headers = createAuthenticatedHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("emails", emails);
+
+    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+    String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId + "/invite";
+
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            entity,
+            String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Error inviting to meeting: {}", e.getMessage());
+        throw new RuntimeException("Failed to send invitations", e);
+    }
+}
+
+/**
+ * Aktualizuje istniejące spotkanie
+ * @param meetingId ID spotkania
+ * @param updateData Mapa z danymi do aktualizacji
+ * @return JsonNode z zaktualizowanym spotkaniem
+ */
+public JsonNode updateMeeting(String meetingId, Map<String, Object> updateData) {
+    ensureValidToken();
+    HttpHeaders headers = createAuthenticatedHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(updateData, headers);
+
+    String url = ZOOM_API_BASE_URL + "/meetings/" + meetingId;
+
+    try {
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.PATCH,
+            entity,
+            String.class
+        );
+        return objectMapper.readTree(response.getBody());
+    } catch (Exception e) {
+        logger.error("Error updating meeting: {}", e.getMessage());
+        throw new RuntimeException("Failed to update meeting", e);
+    }
+}
 }
