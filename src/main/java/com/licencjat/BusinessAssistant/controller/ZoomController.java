@@ -10,7 +10,6 @@ import com.licencjat.BusinessAssistant.security.UserPrincipal;
 import com.licencjat.BusinessAssistant.util.JwtTokenProvider;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import com.licencjat.BusinessAssistant.client.ZoomClient;
 import com.licencjat.BusinessAssistant.entity.Meeting;
 import com.licencjat.BusinessAssistant.model.MeetingDTO;
 import com.licencjat.BusinessAssistant.model.request.CreateZoomMeetingRequest;
