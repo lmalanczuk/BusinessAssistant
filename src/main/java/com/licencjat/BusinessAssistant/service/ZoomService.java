@@ -67,4 +67,27 @@ public interface ZoomService {
      * @return Zaktualizowane spotkanie
      */
     Meeting updateMeeting(String meetingId, Map<String, Object> updateData);
+
+     /**
+     * Pobiera szczegóły spotkania
+     * @param meetingId ID spotkania
+     * @return Szczegóły spotkania w formacie JsonNode
+     */
+    JsonNode getMeeting(String meetingId);
+
+    /**
+     * Pobiera nagrania dla spotkania
+     * @param meetingId ID spotkania
+     * @return Nagrania spotkania w formacie JsonNode
+     */
+    JsonNode getMeetingRecordings(String meetingId);
+
+    /**
+     * Pobiera nagrania użytkownika z określonego okresu
+     * @param userId ID użytkownika Zoom
+     * @param from Data początkowa (format ISO)
+     * @param to Data końcowa (format ISO)
+     * @return Nagrania użytkownika w formacie JsonNode
+     */
+    JsonNode getUserRecordings(String userId, String from, String to);
 }
