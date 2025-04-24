@@ -1,4 +1,4 @@
-package com.licencjat.BusinessAssistant.webhook.zoom;
+package com.licencjat.BusinessAssistant.model.zoom.webhook;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,27 +14,34 @@ import com.licencjat.BusinessAssistant.webhook.WebhookHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Optional;
 
 @Component
 public class ZoomRecordingCompletedHandler implements WebhookHandler {
     private static final Logger logger = LoggerFactory.getLogger(ZoomRecordingCompletedHandler.class);
-    private static final String RECORDING_DIRECTORY = "recordings";
+
+    @Value("${app.recordings.directory:recordings}")
+    private String recordingsDirectory;
 
     private final ObjectMapper objectMapper;
     private final MeetingRepository meetingRepository;
     private final ZoomRecordingClient recordingClient;
     private final RestTemplate restTemplate;
+    private Path recordingsPath;
 
     @Autowired
     public ZoomRecordingCompletedHandler(
@@ -45,11 +52,23 @@ public class ZoomRecordingCompletedHandler implements WebhookHandler {
         this.meetingRepository = meetingRepository;
         this.recordingClient = recordingClient;
         this.restTemplate = new RestTemplate();
+    }
 
+    @PostConstruct
+    public void init() {
         try {
-            Files.createDirectories(Path.of(RECORDING_DIRECTORY));
+            // Default to "recordings" if the property is not set
+            if (recordingsDirectory == null || recordingsDirectory.isEmpty()) {
+                recordingsDirectory = "recordings";
+                logger.warn("recordings.directory not configured, using default: {}", recordingsDirectory);
+            }
+
+            this.recordingsPath = Paths.get(recordingsDirectory);
+            Files.createDirectories(recordingsPath);
+            logger.info("Recordings directory created: {}", recordingsPath.toAbsolutePath());
         } catch(IOException e) {
             logger.error("Error creating recording directory", e);
+            throw new RuntimeException("Could not create recordings directory", e);
         }
     }
 
@@ -61,8 +80,9 @@ public class ZoomRecordingCompletedHandler implements WebhookHandler {
     @Override
     @Transactional
     public void handle(Map<String, Object> webhookData) {
+        ZoomWebhookEvent event = null;
         try {
-            ZoomWebhookEvent event = objectMapper.convertValue(webhookData, ZoomWebhookEvent.class);
+            event = objectMapper.convertValue(webhookData, ZoomWebhookEvent.class);
             String meetingId = event.getPayload().getObject().getId();
             logger.info("Recording completed for meeting: {}", meetingId);
 
@@ -72,9 +92,9 @@ public class ZoomRecordingCompletedHandler implements WebhookHandler {
                     ZoomRecordingResponse.class
             );
 
-            Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+            Optional<Meeting> meetingOptional = meetingRepository.findByZoomMeetingId(meetingId);
             if (!meetingOptional.isPresent()) {
-                throw new ResourceNotFoundException("Nie znaleziono spotkania o id: " + meetingId);
+                throw new ResourceNotFoundException("Meeting not found with ID: " + meetingId);
             }
 
             Meeting meeting = meetingOptional.get();
@@ -86,27 +106,23 @@ public class ZoomRecordingCompletedHandler implements WebhookHandler {
                             meeting.getId(),
                             file.getRecordingType().toLowerCase(),
                             getFileExtension(file.getFileType()));
+
                     Path filePath = downloadFile(downloadUrl, fileName);
 
                     if ("AUDIO_ONLY".equals(file.getRecordingType())) {
                         meeting.setZoomRecordingUrl(filePath.toString());
                         meetingRepository.save(meeting);
-                        logger.info("Zaktualizowano nagranie audio dla spotkania {}: {}", meetingId, filePath);
+                        logger.info("Updated audio recording for meeting {}: {}", meetingId, filePath);
                     }
                 }
             }
         } catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            logger.error("Error processing recording", e);
-            throw new RecordingException("Błąd przetwarzania nagrania", e);
+            String meetingId = event != null ? event.getPayload().getObject().getId() : "unknown";
+            logger.error("Error processing recording for meeting {}", meetingId, e);
+            throw new RecordingException("Error processing recording: " + e.getMessage(), e);
         }
-    }
-
-    private Optional<Meeting> findMeetingByZoomId(String zoomMeetingId) {
-        return meetingRepository.findAll().stream()
-                .filter(m -> zoomMeetingId.equals(m.getZoomMeetingId()))
-                .findFirst();
     }
 
     private String getFileExtension(String fileType) {
@@ -118,13 +134,23 @@ public class ZoomRecordingCompletedHandler implements WebhookHandler {
     }
 
     private Path downloadFile(String url, String fileName) throws IOException {
-        Path filePath = Paths.get(RECORDING_DIRECTORY, fileName);
+        Path filePath = recordingsPath.resolve(fileName);
+        logger.info("Downloading recording to: {}", filePath.toAbsolutePath());
 
-        byte[] fileContent = restTemplate.getForObject(URI.create(url), byte[].class);
-        if (fileContent != null) {
-            Files.write(filePath, fileContent);
+        // Using try-with-resources to ensure streams are closed
+        try (InputStream in = restTemplate.execute(URI.create(url),
+                org.springframework.http.HttpMethod.GET, null,
+                clientHttpResponse -> clientHttpResponse.getBody())) {
+
+            if (in == null) {
+                throw new IOException("Error downloading file: empty response");
+            }
+
+            Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
             return filePath;
+        } catch (Exception e) {
+            logger.error("Error downloading recording", e);
+            throw new IOException("Error downloading file: " + e.getMessage(), e);
         }
-        throw new IOException("Error downloading file");
     }
 }

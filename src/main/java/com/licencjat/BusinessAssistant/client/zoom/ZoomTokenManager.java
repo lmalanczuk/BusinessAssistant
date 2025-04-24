@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.licencjat.BusinessAssistant.config.ZoomApiConfig;
 import com.licencjat.BusinessAssistant.exception.AuthenticationException;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -42,11 +43,13 @@ public class ZoomTokenManager {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.tokenExpiryTime = Instant.now().plusSeconds(expiresIn);
+        logger.info("Tokens set, expires at: {}", tokenExpiryTime);
     }
 
     public void refreshAccessToken() {
         if (refreshToken == null) {
-            throw new AuthenticationException("No refresh token available");
+            logger.error("No refresh token available for refreshing access token");
+            throw new AuthenticationException("No refresh token available. User needs to authorize with Zoom again.");
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -71,12 +74,22 @@ public class ZoomTokenManager {
             logger.info("Access token refreshed successfully");
         } catch (Exception e) {
             logger.error("Error refreshing access token: {}", e.getMessage());
-            throw new AuthenticationException("Failed to refresh access token", e);
+            // Reset tokens to force reauthentication
+            this.accessToken = null;
+            this.refreshToken = null;
+            this.tokenExpiryTime = null;
+            throw new AuthenticationException("Failed to refresh access token. User needs to reconnect with Zoom.", e);
         }
     }
 
     public void ensureValidToken() {
-        if (accessToken == null || Instant.now().isAfter(tokenExpiryTime.minusSeconds(60))) {
+        if (accessToken == null) {
+            logger.warn("No access token available");
+            throw new AuthenticationException("No Zoom access token available. User must authorize with Zoom first.");
+        }
+
+        if (tokenExpiryTime == null || Instant.now().isAfter(tokenExpiryTime.minusSeconds(60))) {
+            logger.info("Token expired or about to expire, refreshing");
             refreshAccessToken();
         }
     }
@@ -88,7 +101,9 @@ public class ZoomTokenManager {
             refreshToken = responseJson.get("refresh_token").asText();
             int expiresIn = responseJson.get("expires_in").asInt();
             tokenExpiryTime = Instant.now().plusSeconds(expiresIn);
+            logger.debug("Token processed, new expiry time: {}", tokenExpiryTime);
         } catch (Exception e) {
+            logger.error("Failed to process token response: {}", e.getMessage());
             throw new AuthenticationException("Failed to process token response", e);
         }
     }
@@ -98,5 +113,13 @@ public class ZoomTokenManager {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         return headers;
+    }
+
+    /**
+    * Gets the current refresh token
+    * @return The current refresh token or null if not set
+     */
+    public String getRefreshToken() {
+     return refreshToken;
     }
 }

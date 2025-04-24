@@ -1,9 +1,8 @@
-package com.licencjat.BusinessAssistant.webhook.zoom;
+package com.licencjat.BusinessAssistant.model.zoom.webhook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.licencjat.BusinessAssistant.entity.Meeting;
 import com.licencjat.BusinessAssistant.entity.enums.Status;
-import com.licencjat.BusinessAssistant.model.zoom.webhook.ZoomWebhookEvent;
 import com.licencjat.BusinessAssistant.repository.MeetingRepository;
 import com.licencjat.BusinessAssistant.webhook.WebhookHandler;
 import org.slf4j.Logger;
@@ -42,26 +41,20 @@ public class ZoomMeetingStartedHandler implements WebhookHandler {
 
             logger.info("Meeting started: {}", meetingId);
 
-            Optional<Meeting> meetingOptional = findMeetingByZoomId(meetingId);
+            Optional<Meeting> meetingOptional = meetingRepository.findByZoomMeetingId(meetingId);
 
             if (meetingOptional.isPresent()) {
                 Meeting meeting = meetingOptional.get();
                 meeting.setStatus(Status.ONGOING);
                 meeting.setStartTime(LocalDateTime.now());
                 meetingRepository.save(meeting);
-                logger.info("Zaktualizowano status spotkania na trwające");
+                logger.info("Updated meeting status to ONGOING");
             } else {
-                logger.warn("Nie znaleziono spotkania o id: {}", meetingId);
+                logger.warn("Meeting not found with ID: {}", meetingId);
             }
         } catch (Exception e) {
-            logger.error("Błąd podczas obsługi webhooka meeting.started", e);
-            throw new RuntimeException("Błąd przetwarzania webhooka", e);
+            logger.error("Error handling meeting.started webhook", e);
+            throw new RuntimeException("Error processing webhook", e);
         }
-    }
-
-    private Optional<Meeting> findMeetingByZoomId(String zoomMeetingId) {
-        return meetingRepository.findAll().stream()
-                .filter(m -> zoomMeetingId.equals(m.getZoomMeetingId()))
-                .findFirst();
     }
 }

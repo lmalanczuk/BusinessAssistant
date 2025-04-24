@@ -120,25 +120,6 @@ public class ZoomController {
         }
     }
 
-    /**
-     * Obsługuje webhooki z Zoom
-     */
-    @PostMapping("/webhook")
-    public ResponseEntity<ApiResponse> handleWebhook(@RequestBody Map<String, Object> webhookData) {
-        try {
-            String eventType = (String) webhookData.get("event");
-            logger.info("Otrzymano webhook z Zoom: {}", eventType);
-
-            zoomService.processWebhook(webhookData);
-
-            return ResponseEntity.ok(new ApiResponse(true, "Webhook przetworzony pomyślnie"));
-        } catch (Exception e) {
-            logger.error("Błąd podczas przetwarzania webhooka Zoom", e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Błąd podczas przetwarzania webhooka: " + e.getMessage()));
-        }
-    }
 
     /**
      * Tworzy nowe spotkanie Zoom

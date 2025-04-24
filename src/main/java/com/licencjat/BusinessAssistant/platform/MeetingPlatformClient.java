@@ -6,47 +6,60 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Wspólny interfejs dla klientów platform spotkań
+ * Common interface for meeting platform clients
  */
 public interface MeetingPlatformClient {
     /**
-     * Tworzy nowe spotkanie na platformie
+     * Creates a new meeting on the platform
      */
     JsonNode createMeeting(String title, LocalDateTime startTime, int durationMinutes,
                            String userId, Map<String, Object> options);
 
     /**
-     * Pobiera szczegóły spotkania
+     * Gets meeting details
      */
     JsonNode getMeeting(String meetingId);
 
     /**
-     * Aktualizuje spotkanie
+     * Updates a meeting
      */
     JsonNode updateMeeting(String meetingId, Map<String, Object> updateData);
 
     /**
-     * Rozpoczyna spotkanie
+     * Starts a meeting
      */
     JsonNode startMeeting(String meetingId);
 
     /**
-     * Kończy spotkanie
+     * Ends a meeting
      */
     JsonNode endMeeting(String meetingId);
 
     /**
-     * Pobiera listę uczestników spotkania
+     * Gets list of meeting participants
      */
     JsonNode getMeetingParticipants(String meetingId);
 
     /**
-     * Wysyła zaproszenia do spotkania
+     * Sends invitations to a meeting
      */
     JsonNode inviteToMeeting(String meetingId, List<String> emails);
 
     /**
-     * Pobiera nagrania spotkania
+     * Gets recordings for a meeting
      */
     JsonNode getMeetingRecordings(String meetingId);
+
+    /**
+     * Gets recordings for a user in a given date range
+     * Note: This method might not be supported by all platforms
+     * @param userId The platform-specific user ID
+     * @param from Start date in format YYYY-MM-DD
+     * @param to End date in format YYYY-MM-DD
+     * @return Recordings data as JsonNode
+     * @throws UnsupportedOperationException if not supported by the platform
+     */
+    default JsonNode getUserRecordings(String userId, String from, String to) {
+        throw new UnsupportedOperationException("Getting user recordings is not supported by this platform");
+    }
 }
