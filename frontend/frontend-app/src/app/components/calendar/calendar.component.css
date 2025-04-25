@@ -1,0 +1,88 @@
+.meeting-item {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  max-width: 80%;  /* Taka sama szerokość jak expandable-item */
+  margin-right: auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.meeting-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.meeting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.meeting-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+}
+
+.meeting-date {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.meeting-tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.meeting-tag {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-radius: 12px;
+  color: #fff;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.tag-planned {
+  background: #f4a261;
+}
+
+.tag-ongoing {
+  background: #2a9d8f;
+}
+
+.tag-completed {
+  background: #4CAF50;
+}
+
+.tag-zoom {
+  background: #4A90E2;
+}
+
+.tag-teams {
+  background: #3C3C3C;
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+  .meeting-item {
+    padding: 15px;
+  }
+
+  .meeting-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .meeting-date {
+    margin-top: 5px;
+  }
+}

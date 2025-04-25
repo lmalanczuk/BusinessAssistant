@@ -88,3 +88,33 @@ export const MOCK_SUMMARIES = [
     - Przegląd postępów w trakcie kolejnych spotkań statusowych.`
   }
 ];
+export const MOCK_MEETINGS = [
+  {
+    id: '1',
+    title: 'Projektowanie nowej funkcji',
+    startTime: '2024-03-20T10:00:00Z',
+    status: 'PLANNED',
+    platform: 'ZOOM',
+  },
+  {
+    id: '2',
+    title: 'Analiza wyników sprzedaży',
+    startTime: '2024-03-21T14:00:00Z',
+    status: 'ONGOING',
+    platform: 'MICROSOFT_TEAMS',
+  },
+  {
+    id: '3',
+    title: 'Spotkanie zespołu marketingu',
+    startTime: '2024-03-22T09:00:00Z',
+    status: 'PLANNED',
+    platform: 'ZOOM',
+  },
+  {
+    id: '4',
+    title: 'Omówienie strategii IT',
+    startTime: '2024-03-23T16:00:00Z',
+    status: 'COMPLETED',
+    platform: 'MICROSOFT_TEAMS',
+  }
+];

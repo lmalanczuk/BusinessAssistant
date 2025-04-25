@@ -1,1 +1,24 @@
-<p>calendar</p>
+<h2 >Meetings (calendar w przyszłości)</h2>
+
+<div class="meeting-item" *ngFor="let meeting of meetings">
+  <div class="meeting-header">
+    <h3 class="meeting-title">{{ meeting.title }}</h3>
+    <span class="meeting-date">{{ meeting.startTime | date:'dd MMM yyyy HH:mm' }}</span>
+  </div>
+
+  <div class="meeting-tags">
+    <span class="meeting-tag" [ngClass]="{
+      'tag-planned': meeting.status === 'PLANNED',
+      'tag-ongoing': meeting.status === 'ONGOING',
+      'tag-completed': meeting.status === 'COMPLETED'
+    }">
+      {{ meeting.status }}
+    </span>
+    <span class="meeting-tag" [ngClass]="{
+      'tag-zoom': meeting.platform === 'ZOOM',
+      'tag-teams': meeting.platform === 'MICROSOFT_TEAMS'
+    }">
+      {{ meeting.platform }}
+    </span>
+  </div>
+</div>

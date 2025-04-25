@@ -16,27 +16,27 @@ export class SidebarComponent {
     {
       routeLink: 'dashboard',
       icon: 'fal fa-home',
-      label: 'Dashboard',
+      label: 'Strona główna',
     },
     {
       routeLink: 'calendar',
       icon: 'fal fa-calendar',
-      label: 'Calendar',
+      label: 'Kalendarz',
     },
     {
       routeLink: 'transcriptions',
       icon: 'fal fa-microphone',
-      label: 'Transcriptions',
+      label: 'Transkrypcje',
     },
     {
       routeLink: 'summaries',
       icon: 'fal fa-pen',
-      label: 'Summaries',
+      label: 'Podsumowania',
     },
     {
       routeLink: 'settings',
       icon: 'fal fa-cog',
-      label: 'Settings',
+      label: 'Ustawienia',
     },
   ];
 
