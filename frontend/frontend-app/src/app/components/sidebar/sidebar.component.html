@@ -8,11 +8,9 @@
     </button>
     @if (!isLeftSidebarCollapsed()) {
       <div class="logo-text">Business Assistant</div>
-      <!--<button class="btn-close" (click)="closeSidenav()">
-        <i class="fal fa-times close-icon"></i>
-      </button>-->
     }
   </div>
+
   <div class="sidenav-nav">
     @for (item of items; track $index) {
       <li class="sidenav-nav-item">
@@ -29,5 +27,15 @@
         </a>
       </li>
     }
+
+    <!-- Wyloguj się – ostatni element -->
+    <li class="sidenav-nav-item logout" *ngIf="authService.isLoggedIn()">
+      <button class="sidenav-nav-link logout-btn" (click)="logout()">
+        <i class="sidenav-link-icon fal fa-arrow-left"></i>
+        @if (!isLeftSidebarCollapsed()) {
+          <span class="sidenav-link-text">Wyloguj się</span>
+        }
+      </button>
+    </li>
   </div>
 </div>

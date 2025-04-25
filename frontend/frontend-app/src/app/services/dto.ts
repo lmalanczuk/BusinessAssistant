@@ -55,19 +55,20 @@ export interface NotificationDTO {
   userId: string | null;
 }
 
-export interface RegisterRequest {
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  password: string | null;
+export interface LoginRequest {
+  email: string;
+  password: string;
 }
 
-export interface LoginRequest {
-  email: string | null;
-  password: string | null;
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  fullName: string;
 }
 
 export interface AuthResponse {
-  token: string | null;
-  user: UserDTO | null;
+  token: string;
+  refreshToken: string;
+  expiresIn: number;
 }
+

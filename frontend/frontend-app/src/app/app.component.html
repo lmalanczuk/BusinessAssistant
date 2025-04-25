@@ -1,9 +1,17 @@
-<app-sidebar
-  [isLeftSidebarCollapsed]="isLeftSidebarCollapsed()"
-  (changeIsLeftSidebarCollapsed)="changeIsLeftSidebarCollapsed($event)"
-/>
+<!-- Layout z sidebarem i main tylko jeśli nie jesteśmy na login/register -->
+<ng-container *ngIf="showLayout()">
+  <app-sidebar
+    [isLeftSidebarCollapsed]="isLeftSidebarCollapsed()"
+    (changeIsLeftSidebarCollapsed)="changeIsLeftSidebarCollapsed($event)"
+  />
 
-<app-main
-  [isLeftSidebarCollapsed]="isLeftSidebarCollapsed()"
-  [screenWidth]="screenWidth()"
-/>
+  <app-main
+    [isLeftSidebarCollapsed]="isLeftSidebarCollapsed()"
+    [screenWidth]="screenWidth()"
+  />
+</ng-container>
+
+<!-- Dla login/register – nie ładujemy sidebaru, tylko outlet -->
+<ng-container *ngIf="!showLayout()">
+  <router-outlet></router-outlet>
+</ng-container>

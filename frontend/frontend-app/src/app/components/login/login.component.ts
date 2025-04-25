@@ -23,6 +23,12 @@ export class LoginComponent {
       password: ['', Validators.required]
     });
   }
+  ngOnInit() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
   login() {
     if (this.loginForm.valid) {
@@ -31,7 +37,10 @@ export class LoginComponent {
           console.log('User logged in successfully', response);
           this.router.navigate(['/dashboard']); // Przekierowanie do dashboardu
         },
-        error: err => this.errorMessage = 'Login failed'
+        error: err => {
+          this.errorMessage = err.error?.message || 'Nieprawidłowy email lub hasło';
+        }
+
       });
     }
   }

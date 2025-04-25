@@ -1,23 +1,31 @@
-<div class="auth-container">
-  <h2>Rejestracja</h2>
-  <form [formGroup]="registerForm" (ngSubmit)="register()">
-    <div class="form-group">
+<div class="auth-fullscreen-wrapper">
+  <div class="auth-box">
+    <h1 class="auth-title">Business Assistant</h1>
+    <h2 class="auth-form-group">Rejestracja</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="register()" class="auth-form-group">
       <label>Imię</label>
       <input type="text" formControlName="firstName" />
-    </div>
-    <div class="form-group">
+
       <label>Nazwisko</label>
       <input type="text" formControlName="lastName" />
-    </div>
-    <div class="form-group">
+
       <label>Email</label>
       <input type="email" formControlName="email" />
-    </div>
-    <div class="form-group">
+
       <label>Hasło</label>
       <input type="password" formControlName="password" />
-    </div>
-    <button type="submit" [disabled]="registerForm.invalid">Zarejestruj się</button>
-    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-  </form>
+      <small *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
+        Hasło jest wymagane
+      </small>
+      <small *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched">
+        Hasło musi mieć co najmniej 8 znaków
+      </small>
+
+      <button type="submit" [disabled]="registerForm.invalid">Zarejestruj się</button>
+    </form>
+    <p *ngIf="errorMessage" class="auth-error">{{ errorMessage }}</p>
+    <p class="auth-footer">
+      Masz już konto? <a [routerLink]="['/login']">Zaloguj się</a>
+    </p>
+  </div>
 </div>

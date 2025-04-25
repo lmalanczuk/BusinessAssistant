@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AuthService} from "../../services/auth.service";
 import {CommonModule} from "@angular/common";
-import {Router} from "@angular/router";
+import {Router, RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [
-    ReactiveFormsModule, CommonModule
+    ReactiveFormsModule, CommonModule, RouterLink
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
@@ -33,7 +33,10 @@ export class RegisterComponent {
           console.log('User registered successfully', response);
           this.router.navigate(['/login']); // Przekierowanie do logowania
         },
-        error: err => this.errorMessage = 'Registration failed'
+        error: err => {
+          this.errorMessage = err.error?.message || 'Rejestracja nie powiodła się';
+        }
+
       });
     }
   }

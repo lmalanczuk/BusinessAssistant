@@ -1,17 +1,19 @@
-<!-- login.component.html -->
-<div class="auth-container">
-  <h2>Logowanie</h2>
-  <form [formGroup]="loginForm" (ngSubmit)="login()">
-    <div class="form-group">
+<div class="auth-fullscreen-wrapper">
+  <div class="auth-box">
+    <h1 class="auth-title">Business Assistant</h1>
+    <h2 class="auth-form-group">Logowanie</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form-group">
       <label>Email</label>
       <input type="email" formControlName="email" />
-    </div>
-    <div class="form-group">
+
       <label>Hasło</label>
       <input type="password" formControlName="password" />
-    </div>
-    <button type="submit" [disabled]="loginForm.invalid">Zaloguj się</button>
-    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-  </form>
-  <p>Nie masz konta? <a (click)="navigateToRegister()" style="cursor: pointer; color: blue;">Zarejestruj się</a></p>
+
+      <button type="submit" [disabled]="loginForm.invalid">Zaloguj się</button>
+    </form>
+    <p *ngIf="errorMessage" class="auth-error">{{ errorMessage }}</p>
+    <p class="auth-footer">
+      Nie masz konta? <a (click)="navigateToRegister()">Zarejestruj się</a>
+    </p>
+  </div>
 </div>

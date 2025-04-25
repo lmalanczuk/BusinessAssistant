@@ -147,7 +147,6 @@
   color: #012a5b !important;
 }
 
-/* Dodatkowe poprawki dla responsywności */
 @media (max-width: 768px) {
   .sidenav {
     padding: 0.5rem 0;
@@ -160,4 +159,27 @@
   .sidenav-nav {
     margin-top: 1rem;
   }
+}
+.logout-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+.sidenav-nav-item.logout {
+  margin-top: auto;
+  margin-bottom: 1.5rem;
+  padding-top: 1rem;
 }
