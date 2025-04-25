@@ -1,65 +1,78 @@
 package com.licencjat.BusinessAssistant.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.licencjat.BusinessAssistant.config.ZoomConfig;
-import com.licencjat.BusinessAssistant.service.ZoomWebhookService;
+import com.licencjat.BusinessAssistant.model.response.ApiResponse;
+import com.licencjat.BusinessAssistant.security.ZoomWebhookValidator;
+import com.licencjat.BusinessAssistant.service.ZoomService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/zoom/webhook")
 public class ZoomWebhookController {
-
     private static final Logger logger = LoggerFactory.getLogger(ZoomWebhookController.class);
-    private final ZoomConfig zoomConfig;
-    private final ZoomWebhookService zoomWebhookService;
-    private final ObjectMapper objectMapper;
 
-    @Autowired
-    public ZoomWebhookController(ZoomConfig zoomConfig, ZoomWebhookService zoomWebhookService) {
-        this.zoomConfig = zoomConfig;
-        this.zoomWebhookService = zoomWebhookService;
-        this.objectMapper = new ObjectMapper();
+    private final ZoomService zoomService;
+    private final ZoomWebhookValidator webhookValidator;
+
+    public ZoomWebhookController(ZoomService zoomService, ZoomWebhookValidator webhookValidator) {
+        this.zoomService = zoomService;
+        this.webhookValidator = webhookValidator;
     }
 
     @PostMapping
-    public ResponseEntity<String> handleWebhook(
-            @RequestHeader("authorization") String authorization,
-            @RequestBody String payload) {
-
-        if (!authorization.equals(zoomConfig.getVerificationToken())) {
-            logger.warn("Invalid verification token received");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+    public ResponseEntity<ApiResponse> handleWebhook(
+            @RequestBody String rawPayload,
+            @RequestHeader(value = "X-Zoom-Signature", required = false) String signature,
+            @RequestHeader(value = "X-Zoom-Request-Timestamp", required = false) String timestamp,
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @RequestBody Map<String, Object> webhookData) {
 
         try {
-            JsonNode webhookData = objectMapper.readTree(payload);
-            String eventType = webhookData.path("event").asText();
+            logger.info("Received webhook from Zoom");
 
-            switch (eventType) {
-                case "meeting.started":
-                    zoomWebhookService.handleMeetingStarted(webhookData);
-                    break;
-                case "meeting.ended":
-                    zoomWebhookService.handleMeetingEnded(webhookData);
-                    break;
-                case "recording.completed":
-                    zoomWebhookService.handleRecordingCompleted(webhookData);
-                    break;
-                default:
-                    logger.info("Received unhandled Zoom webhook event: {}", eventType);
+            // First try v2 signature validation
+            if (signature != null && timestamp != null) {
+                if (!webhookValidator.isValidSignature(rawPayload, timestamp, signature)) {
+                    logger.warn("Invalid webhook signature");
+                    return ResponseEntity
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .body(new ApiResponse(false, "Invalid webhook signature"));
+                }
+            }
+            // Fall back to token validation
+            else if (token != null) {
+                if (!webhookValidator.isValidToken(token)) {
+                    logger.warn("Invalid webhook token");
+                    return ResponseEntity
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .body(new ApiResponse(false, "Invalid webhook token"));
+                }
+            }
+            // No validation info provided
+            else {
+                logger.warn("No validation info provided with webhook");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse(false, "No validation info provided"));
             }
 
-            return ResponseEntity.ok("Webhook received");
+            String eventType = (String) webhookData.get("event");
+            logger.info("Received webhook with event type: {}", eventType);
+
+            // Process the webhook
+            zoomService.processWebhook(webhookData);
+
+            return ResponseEntity.ok(new ApiResponse(true, "Webhook processed successfully"));
         } catch (Exception e) {
-            logger.error("Error processing Zoom webhook: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing webhook");
+            logger.error("Error processing Zoom webhook", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error processing webhook: " + e.getMessage()));
         }
     }
 }

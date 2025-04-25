@@ -1,7 +1,8 @@
 package com.licencjat.BusinessAssistant.model.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 
 @AllArgsConstructor @NoArgsConstructor

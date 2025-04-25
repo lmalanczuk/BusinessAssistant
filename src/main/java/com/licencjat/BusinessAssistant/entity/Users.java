@@ -2,7 +2,8 @@ package com.licencjat.BusinessAssistant.entity;
 
 import com.licencjat.BusinessAssistant.entity.enums.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -51,13 +52,19 @@ public class Users {
     private LocalDateTime zoomTokenExpiry;
 
 
-    public Users( String firstName, String lastName, String email, String username, String password, Role role, Set<Meeting> meetings) {
+    public Users(UUID id, String firstName, String lastName, String email, String username, String password, Role role, Set<Meeting> meetings, String zoomUserId, String zoomAccessToken, String zoomRefreshToken, LocalDateTime zoomTokenExpiry) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.username = generateUsername(firstName, lastName);
+        this.username = username;
         this.password = password;
         this.role = role;
+        this.meetings = meetings;
+        this.zoomUserId = zoomUserId;
+        this.zoomAccessToken = zoomAccessToken;
+        this.zoomRefreshToken = zoomRefreshToken;
+        this.zoomTokenExpiry = zoomTokenExpiry;
     }
 
     private String generateUsername(String firstName, String lastName){
@@ -66,4 +73,5 @@ public class Users {
         }
         return (firstName.charAt(0) +"."+ lastName).toLowerCase();
     }
+
 }

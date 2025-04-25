@@ -1,56 +1,93 @@
 package com.licencjat.BusinessAssistant.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.licencjat.BusinessAssistant.model.response.ZoomMeetingResponse;
-import com.licencjat.BusinessAssistant.model.response.ZoomTokenResponse;
+import com.licencjat.BusinessAssistant.entity.Meeting;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ZoomService {
+    /**
+     * Przetwarza webhook z zooma
+     * @param webhookData
+     */
+    void processWebhook(Map<String, Object> webhookData);
 
     /**
-     * Przetwarza callback OAuth z Zoom i wymienia kod autoryzacyjny na tokeny
-     *
-     * @param code Kod autoryzacyjny z Zoom
-     * @param userId UUID użytkownika w systemie
-     * @return Odpowiedź z tokenami
+     * Tworzy spotkanie i zapisuje w bazie danych
+     * @param title
+     * @param startTime
+     * @param durationMinutes
+     * @param hostUserId
+     * @return
      */
-    ZoomTokenResponse handleOAuthCallback(String code, String userId);
+    Meeting createZoomMeeting(String title, LocalDateTime startTime, int durationMinutes, UUID hostUserId);
 
     /**
-     * Odświeża token dostępu jeśli jest bliski wygaśnięcia
-     *
-     * @param userId UUID użytkownika
-     * @return Nowe tokeny lub null jeśli odświeżenie nie było potrzebne
+     * Pobiera nagrania dla okreslonego spotkania
+     * @param meetingId
      */
-    ZoomTokenResponse refreshTokenIfNeeded(UUID userId);
+    void downloadRecordingsForMeeting(String meetingId);
 
     /**
-     * Tworzy spotkanie w Zoom
-     *
-     * @param userId UUID użytkownika
-     * @param title Tytuł spotkania
-     * @param startTime Czas rozpoczęcia
-     * @param durationMinutes Czas trwania w minutach
-     * @return Odpowiedź z danymi utworzonego spotkania
+     * Rozpoczyna spotkanie Zoom
+     * @param meetingId ID spotkania do rozpoczęcia
+     * @return Zaktualizowane spotkanie
      */
-    ZoomMeetingResponse createZoomMeeting(UUID userId, String title, LocalDateTime startTime, int durationMinutes);
+    Meeting startMeeting(String meetingId);
 
     /**
-     * Pobiera listę spotkań użytkownika z Zoom
-     *
-     * @param userId UUID użytkownika
-     * @return Dane spotkań w formacie JsonNode
+     * Kończy spotkanie Zoom
+     * @param meetingId ID spotkania do zakończenia
+     * @return Zaktualizowane spotkanie
      */
-    JsonNode listUserMeetings(UUID userId);
+    Meeting endMeeting(String meetingId);
 
     /**
-     * Pobiera nagrania z danego spotkania Zoom
-     *
-     * @param userId UUID użytkownika
-     * @param meetingId ID spotkania w Zoom
-     * @return Dane nagrań w formacie JsonNode
+     * Pobiera listę uczestników spotkania
+     * @param meetingId ID spotkania
+     * @return Dane uczestników w formacie JsonNode
      */
-    JsonNode getMeetingRecordings(UUID userId, String meetingId);
+    JsonNode getMeetingParticipants(String meetingId);
+
+    /**
+     * Wysyła zaproszenie do spotkania Zoom
+     * @param meetingId ID spotkania
+     * @param emails Lista adresów email uczestników
+     * @return Status operacji
+     */
+    JsonNode inviteToMeeting(String meetingId, List<String> emails);
+
+    /**
+     * Aktualizuje istniejące spotkanie Zoom
+     * @param meetingId ID spotkania do aktualizacji
+     * @param updateData Mapa z danymi do aktualizacji
+     * @return Zaktualizowane spotkanie
+     */
+    Meeting updateMeeting(String meetingId, Map<String, Object> updateData);
+
+     /**
+     * Pobiera szczegóły spotkania
+     * @param meetingId ID spotkania
+     * @return Szczegóły spotkania w formacie JsonNode
+     */
+    JsonNode getMeeting(String meetingId);
+
+    /**
+     * Pobiera nagrania dla spotkania
+     * @param meetingId ID spotkania
+     * @return Nagrania spotkania w formacie JsonNode
+     */
+    JsonNode getMeetingRecordings(String meetingId);
+
+    /**
+     * Pobiera nagrania użytkownika z określonego okresu
+     * @param userId ID użytkownika Zoom
+     * @param from Data początkowa (format ISO)
+     * @param to Data końcowa (format ISO)
+     * @return Nagrania użytkownika w formacie JsonNode
+     */
+    JsonNode getUserRecordings(String userId, String from, String to);
 }

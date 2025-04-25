@@ -1,15 +1,14 @@
 package com.licencjat.BusinessAssistant.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Data
 @Table(name = "Summary")
+@Data
 public class Summary {
 
     @Id
@@ -22,4 +21,6 @@ public class Summary {
     private String generatedSummary;
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
+
 }
+

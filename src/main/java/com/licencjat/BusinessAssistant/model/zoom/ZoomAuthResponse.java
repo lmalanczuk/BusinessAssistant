@@ -1,21 +1,23 @@
-package com.licencjat.BusinessAssistant.model.response;
+package com.licencjat.BusinessAssistant.model.zoom;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class ZoomTokenResponse {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ZoomAuthResponse {
     @JsonProperty("access_token")
     private String accessToken;
-
-    @JsonProperty("token_type")
-    private String tokenType;
 
     @JsonProperty("refresh_token")
     private String refreshToken;
 
     @JsonProperty("expires_in")
-    private int expiresIn;
+    private Long expiresIn;
+
+    @JsonProperty("token_type")
+    private String tokenType;
 
     @JsonProperty("scope")
     private String scope;

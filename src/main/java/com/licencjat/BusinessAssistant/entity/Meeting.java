@@ -3,15 +3,15 @@ package com.licencjat.BusinessAssistant.entity;
 import com.licencjat.BusinessAssistant.entity.enums.Platform;
 import com.licencjat.BusinessAssistant.entity.enums.Status;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Data
 @Table(name = "Meeting")
+@Data
 public class Meeting {
 
     @Id
@@ -46,4 +46,5 @@ public class Meeting {
 
     @Column(name = "zoom_recording_url")
     private String zoomRecordingUrl;
+
 }
