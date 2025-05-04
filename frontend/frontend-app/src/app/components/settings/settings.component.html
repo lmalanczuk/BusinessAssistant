@@ -1,1 +1,39 @@
-<p>settings</p>
+<!-- frontend/frontend-app/src/app/components/settings/settings.component.html -->
+<div class="settings-container">
+  <h2>Ustawienia konta</h2>
+
+  <div class="settings-section">
+    <h3>Integracja z Zoom</h3>
+
+    <div *ngIf="isLoading" class="loading">
+      <p>Ładowanie informacji o połączeniu...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="zoom-integration">
+      <div class="status-box">
+        <div class="status-indicator" [ngClass]="{'connected': zoomConnected, 'disconnected': !zoomConnected}"></div>
+        <span>Status: {{ zoomConnected ? 'Połączono z Zoom' : 'Nie połączono z Zoom' }}</span>
+      </div>
+
+      <div class="buttons-container">
+        <button
+          *ngIf="!zoomConnected"
+          (click)="connectZoom()"
+          [disabled]="connectLoading"
+          class="connect-button">
+          {{ connectLoading ? 'Łączenie...' : 'Połącz z kontem Zoom' }}
+        </button>
+
+        <button
+          *ngIf="zoomConnected"
+          class="disconnect-button"
+          disabled>
+          Odłącz konto Zoom
+          <span class="tooltip">(Funkcja dostępna wkrótce)</span>
+        </button>
+      </div>
+
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    </div>
+  </div>
+</div>

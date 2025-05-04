@@ -39,6 +39,9 @@ import java.util.stream.Collectors;
 public class ZoomController {
     private static final Logger logger = LoggerFactory.getLogger(ZoomController.class);
 
+    // ZMIANA: Zaczynamy tylko z podstawowym scope user:read
+    private static final String ZOOM_SCOPES = "user:read";
+
     private final ZoomAuthClient zoomClient;
     private final ZoomService zoomService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -65,7 +68,11 @@ public class ZoomController {
         String authUrl = "https://zoom.us/oauth/authorize" +
                 "?response_type=code" +
                 "&client_id=" + clientId +
-                "&redirect_uri=" + redirectUri;
+                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                "&scope=" + URLEncoder.encode(ZOOM_SCOPES, StandardCharsets.UTF_8);
+
+        logger.info("Redirecting to Zoom authorization URL with minimal scopes: {}", ZOOM_SCOPES);
+        logger.debug("Full authorization URL: {}", authUrl);
         return new RedirectView(authUrl);
     }
 
@@ -75,20 +82,34 @@ public class ZoomController {
     @GetMapping("/oauth/callback")
     public ResponseEntity<ApiResponse> oauthCallback(@RequestParam String code, @RequestParam(required = false) String state) {
         try {
+            logger.info("Received OAuth callback with code: {} and state: {}",
+                code != null ? code.substring(0, 10) + "..." : "null",
+                state != null ? state.substring(0, 10) + "..." : "null");
+
+            logger.debug("Configured redirect URI: {}", redirectUri);
+
             // Jeśli state jest dostępne, zweryfikuj token
             UUID userId = null;
             if (state != null && !state.isEmpty()) {
                 userId = jwtTokenProvider.getUserIdFromZoomStateToken(state);
                 if (userId == null) {
+                    logger.error("Failed to extract user ID from state token");
                     return ResponseEntity.badRequest().body(new ApiResponse(false, "Nieprawidłowy token state"));
                 }
+                logger.info("Extracted user ID from state: {}", userId);
             }
 
             // Pobierz tokeny z Zoom
             ZoomAuthResponse authResponse = zoomClient.exchangeCodeForTokens(code, redirectUri);
+            logger.info("Token exchange successful, access token received: {}",
+                authResponse.getAccessToken() != null ? "yes" : "no");
 
             // Jeśli mamy userId, oznacza to, że użytkownik łączy swoje konto
             if (userId != null) {
+                // Krótka przerwa, aby upewnić się, że token został ustawiony
+                Thread.sleep(100);
+
+                // Token został już ustawiony w ZoomTokenManager podczas exchangeCodeForTokens
                 // Pobierz informacje o użytkowniku Zoom
                 JsonNode userInfo = zoomClient.getUserInfo();
                 String zoomUserId = userInfo.get("id").asText();
@@ -112,10 +133,20 @@ public class ZoomController {
                 // Przypadek 1 - prosta autoryzacja bez łączenia konta
                 return ResponseEntity.ok(new ApiResponse(true, "Autoryzacja z Zoom zakończona sukcesem!"));
             }
-        } catch (Exception e) {
-            logger.error("Błąd podczas autoryzacji z Zoom", e);
+        } catch (AuthenticationException e) {
+            logger.error("Authentication error during Zoom authorization: {}", e.getMessage());
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Błąd autoryzacji z Zoom: " + e.getMessage()));
+        } catch (ResourceNotFoundException e) {
+            logger.error("Resource not found during Zoom authorization: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Unexpected error during Zoom authorization", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Błąd podczas autoryzacji z Zoom: " + e.getMessage()));
         }
     }
@@ -249,13 +280,15 @@ public class ZoomController {
             String state = jwtTokenProvider.generateZoomStateToken(userId);
             logger.info("Wygenerowano token state: {}", state);
 
+            // Dodajemy minimalne wymagane scopes do URL autoryzacji
             String authUrl = "https://zoom.us/oauth/authorize" +
                     "?response_type=code" +
                     "&client_id=" + clientId +
-                    "&redirect_uri=" + redirectUri +
-                    "&state=" + state;
+                    "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                    "&state=" + state +
+                    "&scope=" + URLEncoder.encode(ZOOM_SCOPES, StandardCharsets.UTF_8);
 
-            logger.info("URL autoryzacji Zoom: {}", authUrl);
+            logger.info("URL autoryzacji Zoom z minimalnym scope: {}", authUrl);
             return new RedirectView(authUrl);
         } catch (Exception e) {
             logger.error("Błąd podczas łączenia z Zoom: {}", e.getMessage(), e);
@@ -431,6 +464,7 @@ public class ZoomController {
             Map<String, Object> response = new HashMap<>();
             response.put("clientId", clientId);
             response.put("redirectUri", redirectUri);
+            response.put("scopes", ZOOM_SCOPES);
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UserPrincipal) {
@@ -479,17 +513,23 @@ public class ZoomController {
 
             String state = jwtTokenProvider.generateZoomStateToken(userUUID);
 
+            // Upewnijmy się, że redirect_uri jest poprawnie zakodowany
+            String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+
             Map<String, Object> response = new HashMap<>();
             response.put("userId", userUUID);
             response.put("state", state);
             response.put("clientId", clientId);
             response.put("redirectUri", redirectUri);
+            response.put("encodedRedirectUri", encodedRedirectUri);
+            response.put("scopes", ZOOM_SCOPES);
 
             String authUrl = "https://zoom.us/oauth/authorize" +
                     "?response_type=code" +
                     "&client_id=" + clientId +
-                    "&redirect_uri=" + redirectUri +
-                    "&state=" + state;
+                    "&redirect_uri=" + encodedRedirectUri +
+                    "&state=" + state +
+                    "&scope=" + URLEncoder.encode(ZOOM_SCOPES, StandardCharsets.UTF_8);
 
             response.put("authUrl", authUrl);
 
@@ -499,6 +539,31 @@ public class ZoomController {
             logger.error("Błąd debug połączenia z Zoom", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Błąd: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Endpoint diagnostyczny dla konfiguracji Zoom App
+     */
+    @GetMapping("/validate-config")
+    public ResponseEntity<?> validateZoomConfig() {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            response.put("clientId", clientId);
+            response.put("redirectUri", redirectUri);
+            response.put("encodedRedirectUri", URLEncoder.encode(redirectUri, StandardCharsets.UTF_8));
+            response.put("scopes", ZOOM_SCOPES);
+
+            // Sprawdź czy redirect uri nie zawiera znaków specjalnych
+            boolean hasSpecialChars = !redirectUri.matches("^[a-zA-Z0-9:/._-]+$");
+            response.put("hasSpecialCharsInUri", hasSpecialChars);
+
+            logger.info("Zoom config validation: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error validating Zoom config", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error: " + e.getMessage()));
         }
     }
 

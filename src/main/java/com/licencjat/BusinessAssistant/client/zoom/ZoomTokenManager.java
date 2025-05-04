@@ -43,7 +43,10 @@ public class ZoomTokenManager {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.tokenExpiryTime = Instant.now().plusSeconds(expiresIn);
-        logger.info("Tokens set, expires at: {}", tokenExpiryTime);
+        logger.info("Tokens set successfully");
+        logger.debug("Access token starts with: {}", accessToken != null ? accessToken.substring(0, 10) + "..." : "null");
+        logger.debug("Refresh token starts with: {}", refreshToken != null ? refreshToken.substring(0, 10) + "..." : "null");
+        logger.debug("Token expires at: {}", tokenExpiryTime);
     }
 
     public void refreshAccessToken() {
@@ -84,12 +87,17 @@ public class ZoomTokenManager {
 
     public void ensureValidToken() {
         if (accessToken == null) {
-            logger.warn("No access token available");
+            logger.error("No access token available in token manager");
             throw new AuthenticationException("No Zoom access token available. User must authorize with Zoom first.");
         }
 
-        if (tokenExpiryTime == null || Instant.now().isAfter(tokenExpiryTime.minusSeconds(60))) {
-            logger.info("Token expired or about to expire, refreshing");
+        if (tokenExpiryTime == null) {
+            logger.warn("No token expiry time set, assuming token is valid");
+            return; // Token może być valid, ale brak informacji o ekspiracji
+        }
+
+        if (Instant.now().isAfter(tokenExpiryTime.minusSeconds(60))) {
+            logger.info("Token expired or about to expire (expires at: {}), refreshing", tokenExpiryTime);
             refreshAccessToken();
         }
     }
@@ -109,17 +117,27 @@ public class ZoomTokenManager {
     }
 
     public HttpHeaders createAuthenticatedHeaders() {
+        logger.debug("Creating authenticated headers, current access token: {}",
+            accessToken != null ? accessToken.substring(0, Math.min(10, accessToken.length())) + "..." : "null");
+
         ensureValidToken();
+
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        headers.set("Authorization", "Bearer " + accessToken);
+        logger.debug("Headers created with Bearer token: {}",
+            headers.get("Authorization") != null ? headers.get("Authorization").get(0).substring(0, Math.min(20, headers.get("Authorization").get(0).length())) + "..." : "null");
+
         return headers;
     }
 
-    /**
-    * Gets the current refresh token
-    * @return The current refresh token or null if not set
-     */
     public String getRefreshToken() {
-     return refreshToken;
+        return refreshToken;
+    }
+
+    public String getTokenState() {
+        return String.format("AccessToken: %s, RefreshToken: %s, Expiry: %s",
+            accessToken != null ? "set" : "null",
+            refreshToken != null ? "set" : "null",
+            tokenExpiryTime != null ? tokenExpiryTime.toString() : "null");
     }
 }

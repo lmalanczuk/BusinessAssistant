@@ -39,9 +39,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/zoom/oauth/callback", "/api/zoom/webhooks").permitAll()
-                .anyRequest().authenticated()
+           .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                "/api/auth/**", "/api/zoom/oauth/callback", "/api/zoom/webhooks", "/api/zoom/connect-debug"
+            ).permitAll()
+            .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService), UsernamePasswordAuthenticationFilter.class);
