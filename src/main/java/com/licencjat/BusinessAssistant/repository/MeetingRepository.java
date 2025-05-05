@@ -13,6 +13,6 @@ public interface MeetingRepository extends JpaRepository<Meeting, UUID> {
     /**
      * Find meeting by its Zoom ID
      */
-    @Query("SELECT m FROM Meeting m WHERE m.zoomMeetingId = :zoomMeetingId")
-    Optional<Meeting> findByZoomMeetingId(@Param("zoomMeetingId") String zoomMeetingId);
+    @Query("SELECT m FROM Meeting m WHERE m.zegoRoomId = :zegoRoomId")
+    Optional<Meeting> findByZegoRoomId(@Param("zegoRoomId") String zegoRoomId);
 }

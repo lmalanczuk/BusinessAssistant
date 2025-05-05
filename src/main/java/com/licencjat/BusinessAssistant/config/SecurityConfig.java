@@ -37,14 +37,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-           .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/api/auth/**", "/api/zoom/oauth/callback", "/api/zoom/webhooks", "/api/zoom/connect-debug"
-            ).permitAll()
-            .anyRequest().authenticated()
-            )
+    .csrf(csrf -> csrf.disable())
+    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    .authorizeHttpRequests(auth -> auth
+        .requestMatchers(
+            "/api/auth/**"
+        ).permitAll()
+        .anyRequest().authenticated()
+    )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService), UsernamePasswordAuthenticationFilter.class);
 

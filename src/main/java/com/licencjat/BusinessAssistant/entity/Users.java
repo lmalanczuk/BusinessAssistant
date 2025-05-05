@@ -39,20 +39,21 @@ public class Users {
     @ManyToMany(mappedBy = "participants")
     private Set<Meeting> meetings;
 
-    @Column(name = "zoom_user_id")
-    private String zoomUserId;
+//    @Column(name = "zoom_user_id")
+//    private String zoomUserId;
+//
+//    @Column(name = "zoom_access_token")
+//    private String zoomAccessToken;
+//
+//    @Column(name = "zoom_refresh_token")
+//    private String zoomRefreshToken;
+//
+//    @Column(name = "zoom_token_expiry")
+//    private LocalDateTime zoomTokenExpiry;
+    @Column(name = "zego_user_id")
+    private String zegoUserId;
 
-    @Column(name = "zoom_access_token")
-    private String zoomAccessToken;
-
-    @Column(name = "zoom_refresh_token")
-    private String zoomRefreshToken;
-
-    @Column(name = "zoom_token_expiry")
-    private LocalDateTime zoomTokenExpiry;
-
-
-    public Users(UUID id, String firstName, String lastName, String email, String username, String password, Role role, Set<Meeting> meetings, String zoomUserId, String zoomAccessToken, String zoomRefreshToken, LocalDateTime zoomTokenExpiry) {
+    public Users(UUID id, String firstName, String lastName, String email, String username, String password, Role role, Set<Meeting> meetings) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -61,10 +62,6 @@ public class Users {
         this.password = password;
         this.role = role;
         this.meetings = meetings;
-        this.zoomUserId = zoomUserId;
-        this.zoomAccessToken = zoomAccessToken;
-        this.zoomRefreshToken = zoomRefreshToken;
-        this.zoomTokenExpiry = zoomTokenExpiry;
     }
 
     private String generateUsername(String firstName, String lastName){
@@ -73,5 +70,6 @@ public class Users {
         }
         return (firstName.charAt(0) +"."+ lastName).toLowerCase();
     }
+
 
 }

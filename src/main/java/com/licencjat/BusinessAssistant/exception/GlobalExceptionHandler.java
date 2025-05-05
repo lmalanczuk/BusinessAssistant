@@ -24,14 +24,6 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse(false, ex.getMessage()));
     }
 
-    @ExceptionHandler(ZoomApiException.class)
-    public ResponseEntity<ApiResponse> handleZoomApiException(ZoomApiException ex, WebRequest request) {
-        logger.error("Błąd API Zoom: {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse(false, ex.getMessage()));
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         logger.error("Nie znaleziono zasobu: {}", ex.getMessage());

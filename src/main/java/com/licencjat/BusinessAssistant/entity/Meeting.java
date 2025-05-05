@@ -28,6 +28,13 @@ public class Meeting {
 
     @Enumerated(EnumType.STRING)
     private Platform platform;
+
+    @Column(name = "zego_room_id")
+    private String zegoRoomId;
+
+    @Column(name = "zego_stream_id")
+    private String zegoStreamId;
+
     @ManyToMany
     @JoinTable(
             name = "meeting_participants",
@@ -35,16 +42,17 @@ public class Meeting {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<Users> participants;
 
-    @Column(name = "zoom_meeting_id")
-    private String zoomMeetingId;
+//    @Column(name = "zoom_meeting_id")
+//    private String zoomMeetingId;
+//
+//    @Column(name = "zoom_host_id")
+//    private String zoomHostId;
+//
+//    @Column(name = "zoom_join_url")
+//    private String zoomJoinUrl;
+//
+//    @Column(name = "zoom_recording_url")
+//    private String zoomRecordingUrl;
 
-    @Column(name = "zoom_host_id")
-    private String zoomHostId;
-
-    @Column(name = "zoom_join_url")
-    private String zoomJoinUrl;
-
-    @Column(name = "zoom_recording_url")
-    private String zoomRecordingUrl;
 
 }
