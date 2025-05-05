@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface MeetingRepository extends JpaRepository<Meeting, UUID> {
 
     /**
-     * Find meeting by its Zoom ID
+     * Find meeting by its ZEGO Room ID
      */
     @Query("SELECT m FROM Meeting m WHERE m.zegoRoomId = :zegoRoomId")
     Optional<Meeting> findByZegoRoomId(@Param("zegoRoomId") String zegoRoomId);

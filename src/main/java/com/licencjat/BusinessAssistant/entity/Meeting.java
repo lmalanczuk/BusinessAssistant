@@ -4,14 +4,17 @@ import com.licencjat.BusinessAssistant.entity.enums.Platform;
 import com.licencjat.BusinessAssistant.entity.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "Meeting")
 @Data
+@EqualsAndHashCode(exclude = "participants")
 public class Meeting {
 
     @Id
@@ -29,30 +32,29 @@ public class Meeting {
     @Enumerated(EnumType.STRING)
     private Platform platform;
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "meeting_participants",
+            joinColumns = @JoinColumn(name = "meeting_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<Users> participants = new HashSet<>();
+
     @Column(name = "zego_room_id")
     private String zegoRoomId;
 
     @Column(name = "zego_stream_id")
     private String zegoStreamId;
 
-    @ManyToMany
-    @JoinTable(
-            name = "meeting_participants",
-            joinColumns = @JoinColumn(name = "meeting_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<Users> participants;
-
-//    @Column(name = "zoom_meeting_id")
-//    private String zoomMeetingId;
-//
-//    @Column(name = "zoom_host_id")
-//    private String zoomHostId;
-//
-//    @Column(name = "zoom_join_url")
-//    private String zoomJoinUrl;
-//
-//    @Column(name = "zoom_recording_url")
-//    private String zoomRecordingUrl;
-
-
+    // Metoda pomocnicza do zarządzania relacją
+    public void addParticipant(Users user) {
+        if (participants == null) {
+            participants = new HashSet<>();
+        }
+        participants.add(user);
+        // Zarządzamy relacją dwustronną, ale nie wywołujemy hashCode/equals
+        if (user.getMeetings() == null) {
+            user.setMeetings(new HashSet<>());
+        }
+        user.getMeetings().add(this);
+    }
 }

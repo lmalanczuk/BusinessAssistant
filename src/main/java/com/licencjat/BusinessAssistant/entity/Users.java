@@ -3,9 +3,11 @@ package com.licencjat.BusinessAssistant.entity;
 import com.licencjat.BusinessAssistant.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,6 +15,9 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @Table(name = "Users")
+// Poniższe adnotacje są kluczowe - wykluczają meetings z hashCode i equals
+@EqualsAndHashCode(exclude = "meetings")
+@ToString(exclude = "meetings")
 public class Users {
 
     @Id
@@ -36,22 +41,8 @@ public class Users {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ManyToMany(mappedBy = "participants")
-    private Set<Meeting> meetings;
-
-//    @Column(name = "zoom_user_id")
-//    private String zoomUserId;
-//
-//    @Column(name = "zoom_access_token")
-//    private String zoomAccessToken;
-//
-//    @Column(name = "zoom_refresh_token")
-//    private String zoomRefreshToken;
-//
-//    @Column(name = "zoom_token_expiry")
-//    private LocalDateTime zoomTokenExpiry;
-    @Column(name = "zego_user_id")
-    private String zegoUserId;
+    @ManyToMany(mappedBy = "participants", fetch = FetchType.LAZY)
+    private Set<Meeting> meetings = new HashSet<>();
 
     public Users(UUID id, String firstName, String lastName, String email, String username, String password, Role role, Set<Meeting> meetings) {
         this.id = id;
@@ -71,5 +62,10 @@ public class Users {
         return (firstName.charAt(0) +"."+ lastName).toLowerCase();
     }
 
-
+       public void addMeeting(Meeting meeting) {
+        if (meetings == null) {
+            meetings = new HashSet<>();
+        }
+        meetings.add(meeting);
+    }
 }
