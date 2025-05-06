@@ -63,17 +63,14 @@ public class ZegoService {
     @Transactional
     public Meeting createMeeting(String title, LocalDateTime startTime, int durationMinutes, UUID hostUserId) {
     try {
-        // Znajdź użytkownika-hosta
         Users host = userRepository.findById(hostUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono użytkownika o ID: " + hostUserId));
 
-        // Wygeneruj unikalny ID pokoju
         String roomId = UUID.randomUUID().toString();
 
         logger.info("Tworzenie spotkania: tytuł={}, rozpoczęcie={}, ID pokoju={}",
                 title, startTime, roomId);
 
-        // Tworzenie encji spotkania
         Meeting meeting = new Meeting();
         meeting.setTitle(title);
         meeting.setStartTime(startTime);
@@ -82,15 +79,12 @@ public class ZegoService {
         meeting.setPlatform(Platform.ZEGOCLOUD);
         meeting.setZegoRoomId(roomId);
 
-        // Inicjalizacja zbioru uczestników, jeśli jest null
         if (meeting.getParticipants() == null) {
             meeting.setParticipants(new HashSet<>());
         }
 
-        // Użycie metody pomocniczej zamiast bezpośredniego dodawania
         meeting.addParticipant(host);
 
-        // Zapisanie w bazie danych
         Meeting savedMeeting = meetingRepository.save(meeting);
         logger.info("Utworzono spotkanie: {}", savedMeeting.getId());
 
@@ -98,7 +92,6 @@ public class ZegoService {
     } catch (ResourceNotFoundException e) {
         throw e;
     } catch (Exception e) {
-        // Bardziej szczegółowy log błędu
         logger.error("Błąd podczas tworzenia spotkania: {}",
                 e.getMessage() != null ? e.getMessage() : "Nieznany błąd", e);
         throw new ZegoApiException("Nie można utworzyć spotkania: " +
@@ -115,15 +108,12 @@ public class ZegoService {
     @Transactional
     public Meeting startMeeting(UUID meetingId) {
         try {
-            // Znajdź spotkanie
             Meeting meeting = meetingRepository.findById(meetingId)
                     .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono spotkania o ID: " + meetingId));
 
-            // Aktualizacja statusu i czasu rozpoczęcia
             meeting.setStatus(Status.ONGOING);
             meeting.setStartTime(LocalDateTime.now());
 
-            // Zapisanie zmian
             Meeting updatedMeeting = meetingRepository.save(meeting);
             logger.info("Rozpoczęto spotkanie: {}", meetingId);
 
@@ -145,15 +135,12 @@ public class ZegoService {
     @Transactional
     public Meeting endMeeting(UUID meetingId) {
         try {
-            // Znajdź spotkanie
             Meeting meeting = meetingRepository.findById(meetingId)
                     .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono spotkania o ID: " + meetingId));
 
-            // Aktualizacja statusu i czasu zakończenia
             meeting.setStatus(Status.COMPLETED);
             meeting.setEndTime(LocalDateTime.now());
 
-            // Zapisanie zmian
             Meeting updatedMeeting = meetingRepository.save(meeting);
             logger.info("Zakończono spotkanie: {}", meetingId);
 

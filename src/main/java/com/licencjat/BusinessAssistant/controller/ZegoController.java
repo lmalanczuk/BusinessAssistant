@@ -70,7 +70,6 @@ public ResponseEntity<?> createMeeting(@Valid @RequestBody CreateMeetingRequest 
     try {
         logger.info("Otrzymano żądanie utworzenia spotkania: {}", request);
 
-        // Pobierz aktualnego użytkownika jako hosta
         UserPrincipal userPrincipal = getCurrentUser();
         if (userPrincipal == null) {
             logger.warn("Brak uwierzytelnionego użytkownika");
@@ -80,7 +79,6 @@ public ResponseEntity<?> createMeeting(@Valid @RequestBody CreateMeetingRequest 
 
         logger.info("Tworzenie spotkania dla użytkownika: {}", userPrincipal.getId());
 
-        // Tworzenie spotkania
         Meeting meeting = zegoService.createMeeting(
                 request.getTitle(),
                 request.getStartTime(),
@@ -88,7 +86,6 @@ public ResponseEntity<?> createMeeting(@Valid @RequestBody CreateMeetingRequest 
                 userPrincipal.getId()
         );
 
-        // Konwersja na DTO
         MeetingDTO meetingDTO = convertToDTO(meeting);
         logger.info("Spotkanie utworzone pomyślnie: {}", meeting.getId());
 

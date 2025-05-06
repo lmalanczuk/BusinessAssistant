@@ -1,1 +1,175 @@
-<h2>Witaj, {{ fullName }}!</h2>
+<!-- src/app/components/dashboard/dashboard.component.html -->
+<div class="dashboard-container">
+  <div class="welcome-section">
+    <h1>Witaj, {{authService.getCurrentUser().firstName}}!</h1>
+    <p>Dzisiaj jest {{currentDate | date:'EEEE, d MMMM yyyy'}}</p>
+  </div>
+
+  <!-- Mini-widget dla aktywnego spotkania -->
+  <div class="active-meeting-widget" *ngIf="currentActiveMeeting">
+    <div class="widget-header">
+      <span class="status-badge">Aktywne spotkanie</span>
+      <h3>{{currentActiveMeeting.title}}</h3>
+    </div>
+
+    <div class="widget-body">
+      <div class="meeting-time">
+        <i class="fa fa-clock"></i>
+        <span>{{currentActiveMeeting.startTime | date:'HH:mm'}} - {{currentActiveMeeting.endTime | date:'HH:mm'}}</span>
+      </div>
+
+      <div class="participant-count">
+        <i class="fa fa-users"></i>
+        <span>{{currentActiveMeeting.participantCount || 0}} uczestników</span>
+      </div>
+    </div>
+
+    <div class="widget-actions">
+      <button class="action-btn primary" (click)="joinMeeting(currentActiveMeeting.id)">
+        <i class="fa fa-video"></i>
+        Dołącz teraz
+      </button>
+    </div>
+  </div>
+
+  <!-- ZEGOCLOUD Actions -->
+  <div class="zego-actions">
+    <div class="zego-card">
+      <div class="card-header">
+        <h2>Wideokonferencje</h2>
+        <span class="tech-label">ZEGOCLOUD</span>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-btn primary" (click)="startInstantMeeting()">
+          <i class="fa fa-video"></i>
+          Rozpocznij spotkanie teraz
+        </button>
+
+        <button class="action-btn secondary" (click)="scheduleMeeting()">
+          <i class="fa fa-calendar-plus"></i>
+          Zaplanuj spotkanie
+        </button>
+      </div>
+
+      <div class="join-meeting-form">
+        <input type="text" placeholder="Wpisz kod spotkania" #roomIdInput>
+        <button class="action-btn" (click)="joinByRoomId(roomIdInput.value)">
+          <i class="fa fa-sign-in-alt"></i>
+          Dołącz
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nadchodzące spotkania -->
+  <div class="upcoming-meetings-section">
+    <div class="section-header">
+      <h2>Nadchodzące spotkania</h2>
+      <button class="view-all-btn" routerLink="/meetings">Zobacz wszystkie</button>
+    </div>
+
+    <div class="meetings-list" *ngIf="!isLoading; else loadingTemplate">
+      <div class="meeting-item" *ngFor="let meeting of upcomingMeetings | slice:0:3">
+        <div class="meeting-info">
+          <h3>{{meeting.title}}</h3>
+          <div class="meeting-details">
+            <span class="time">{{meeting.startTime | date:'HH:mm'}} - {{meeting.endTime | date:'HH:mm'}}</span>
+            <span class="date">{{meeting.startTime | date:'d MMMM, yyyy'}}</span>
+          </div>
+        </div>
+
+        <div class="meeting-actions">
+          <button class="join-btn" (click)="joinMeeting(meeting.id)"
+                  [disabled]="!isMeetingActive(meeting)">
+            <i class="fa fa-video"></i>
+            Dołącz
+          </button>
+        </div>
+      </div>
+
+      <div class="no-meetings" *ngIf="upcomingMeetings.length === 0">
+        <p>Brak nadchodzących spotkań.</p>
+        <button class="action-btn secondary" (click)="scheduleMeeting()">
+          Zaplanuj spotkanie
+        </button>
+      </div>
+    </div>
+
+    <ng-template #loadingTemplate>
+      <div class="loading-spinner">
+        <i class="fa fa-spinner fa-spin"></i> Ładowanie spotkań...
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Zaproszenia -->
+  <div class="invitations-section" *ngIf="invitations.length > 0">
+    <div class="section-header">
+      <h2>Zaproszenia do spotkań</h2>
+    </div>
+
+    <div class="invitations-list">
+      <div class="invitation-item" *ngFor="let invitation of invitations | slice:0:3">
+        <div class="invitation-info">
+          <h3>{{invitation.meetingTitle}}</h3>
+          <p>od {{invitation.senderName}}</p>
+        </div>
+
+        <div class="invitation-actions">
+          <button class="accept-btn">Akceptuj</button>
+          <button class="reject-btn">Odrzuć</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ostatnie transkrypcje -->
+  <div class="recent-transcriptions-section" *ngIf="recentTranscriptions.length > 0">
+    <div class="section-header">
+      <h2>Ostatnie transkrypcje</h2>
+      <button class="view-all-btn" routerLink="/transcriptions">Zobacz wszystkie</button>
+    </div>
+
+    <div class="transcriptions-list">
+      <div class="transcription-item" *ngFor="let transcription of recentTranscriptions | slice:0:3">
+        <div class="transcription-info">
+          <h3>{{transcription.meetingTitle}}</h3>
+          <span class="date">{{transcription.generatedAt | date:'d MMMM, yyyy'}}</span>
+        </div>
+
+        <div class="transcription-actions">
+          <button class="action-btn small" routerLink="/transcriptions/{{transcription.id}}">
+            <i class="fa fa-eye"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ostatnie nagrania -->
+  <div class="recent-recordings-section" *ngIf="recentRecordings.length > 0">
+    <div class="section-header">
+      <h2>Ostatnie nagrania</h2>
+      <button class="view-all-btn" routerLink="/recordings">Zobacz wszystkie</button>
+    </div>
+
+    <div class="recordings-list">
+      <div class="recording-item" *ngFor="let recording of recentRecordings | slice:0:3">
+        <div class="recording-info">
+          <h3>{{recording.meetingTitle}}</h3>
+          <span class="date">{{recording.recordedAt | date:'d MMMM, yyyy'}}</span>
+        </div>
+
+        <div class="recording-actions">
+          <button class="action-btn small" (click)="playRecording(recording.url)">
+            <i class="fa fa-play"></i>
+          </button>
+          <button class="action-btn small" (click)="downloadRecording(recording.url)">
+            <i class="fa fa-download"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
