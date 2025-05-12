@@ -1,7 +1,7 @@
 <!-- src/app/components/dashboard/dashboard.component.html -->
 <div class="dashboard-container">
   <div class="welcome-section">
-    <h1>Witaj, {{authService.getCurrentUser().firstName}}!</h1>
+    <h1>Witaj, {{authService.getUserFullName()}}!</h1>
     <p>Dzisiaj jest {{currentDate | date:'EEEE, d MMMM yyyy'}}</p>
   </div>
 
@@ -57,6 +57,11 @@
         <button class="action-btn" (click)="joinByRoomId(roomIdInput.value)">
           <i class="fa fa-sign-in-alt"></i>
           Dołącz
+        </button>
+
+        <button class="action-btn" routerLink="/video-call">
+          <i class="fa fa-comments"></i>
+          Połączenie wideo
         </button>
       </div>
     </div>

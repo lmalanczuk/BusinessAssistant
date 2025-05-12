@@ -1,0 +1,9 @@
+<div class="video-container">
+  <video #localVideo autoplay muted playsinline class="video"></video>
+  <video #remoteVideo autoplay playsinline class="video"></video>
+</div>
+
+<div class="controls">
+  <button (click)="call()">Rozpocznij połączenie</button>
+  <button (click)="hangUp()">Zakończ</button>
+</div>

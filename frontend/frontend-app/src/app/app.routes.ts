@@ -48,6 +48,11 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent)
   },
+  {
+    path: 'video-call',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./components/video/video-call.component').then(m => m.VideoCallComponent)
+  },
 
   // Domyślna ścieżka fallback
   { path: '**', redirectTo: 'dashboard' }
