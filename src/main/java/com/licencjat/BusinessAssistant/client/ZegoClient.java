@@ -24,4 +24,22 @@ public class ZegoClient {
         this.tokenGenerator = tokenGenerator;
         this.objectMapper = objectMapper;
     }
+
+    /**
+     * Generuje token dla użytkownika
+     *
+     * @param userId ID użytkownika
+     * @param roomId ID pokoju
+     * @param privilege Poziom uprawnień (1=tylko subskrypcja, 2=publikowanie)
+     * @param effectiveTimeInSeconds Czas ważności tokenu w sekundach
+     * @return Wygenerowany token
+     */
+    public String generateToken(String userId, String roomId, int privilege, int effectiveTimeInSeconds) {
+        try {
+            return tokenGenerator.generateToken(userId, roomId, privilege, effectiveTimeInSeconds);
+        } catch (Exception e) {
+            logger.error("Błąd podczas generowania tokenu: {}", e.getMessage());
+            throw new ZegoApiException("Nie można wygenerować tokenu", e);
+        }
+    }
 }

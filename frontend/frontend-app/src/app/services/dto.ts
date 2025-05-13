@@ -1,7 +1,6 @@
 export enum Platform {
   ZOOM = "ZOOM",
-  MICROSOFT_TEAMS = "MICROSOFT_TEAMS",
-  ZEGO = "ZEGO"
+  MICROSOFT_TEAMS = "MICROSOFT_TEAMS"
 }
 
 export enum Role {
@@ -69,13 +68,7 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: string;
-  };
-  refreshToken?: string;
+  refreshToken: string;
+  expiresIn: number;
 }
 

@@ -22,21 +22,19 @@ import java.util.*;
 public class ZegoService {
     private static final Logger logger = LoggerFactory.getLogger(ZegoService.class);
 
+    private final ZegoTokenGenerator tokenGenerator;
     private final MeetingRepository meetingRepository;
     private final UserRepository userRepository;
-    private final ZegoTokenGenerator tokenGenerator;
 
     @Autowired
-    public ZegoService(MeetingRepository meetingRepository,
-                      UserRepository userRepository,
-                      ZegoTokenGenerator tokenGenerator) {
+    public ZegoService(ZegoTokenGenerator tokenGenerator, MeetingRepository meetingRepository, UserRepository userRepository) {
+        this.tokenGenerator = tokenGenerator;
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
-        this.tokenGenerator = tokenGenerator;
     }
 
     /**
-     * Generuje token dla użytkownika ZegoCloud
+     * Generuje token dla użytkownika
      *
      * @param userId ID użytkownika
      * @param roomId ID pokoju
@@ -45,14 +43,10 @@ public class ZegoService {
      */
     public String generateToken(String userId, String roomId, int effectiveTimeInSeconds) {
         try {
-            Map<String, Integer> privileges = new HashMap<>();
-            // Domyślne uprawnienia - można logować i publikować
-            privileges.put(ZegoTokenGenerator.PRIVILEGE_LOGIN, ZegoTokenGenerator.PRIVILEGE_ENABLE);
-            privileges.put(ZegoTokenGenerator.PRIVILEGE_PUBLISH, ZegoTokenGenerator.PRIVILEGE_ENABLE);
-
-            return tokenGenerator.generateToken(userId, roomId, privileges, effectiveTimeInSeconds);
+            // Standardowo dajemy uprawnienia do publikowania (2)
+            return tokenGenerator.generateToken(userId, roomId, 2, effectiveTimeInSeconds);
         } catch (Exception e) {
-            logger.error("Błąd podczas generowania tokenu ZegoCloud: {}", e.getMessage(), e);
+            logger.error("Błąd generowania tokenu: {}", e.getMessage());
             throw new ZegoApiException("Nie można wygenerować tokenu", e);
         }
     }

@@ -18,7 +18,6 @@ import {NgIf} from "@angular/common";
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  title = 'frontend-app';
   isLeftSidebarCollapsed = signal<boolean>(false);
   screenWidth = signal<number>(window.innerWidth);
   showLayout = signal<boolean>(true);

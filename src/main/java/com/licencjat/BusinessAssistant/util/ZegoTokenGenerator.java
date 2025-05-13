@@ -1,156 +1,96 @@
 package com.licencjat.BusinessAssistant.util;
 
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
+import com.licencjat.BusinessAssistant.config.ZegoConfig;
+
+import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Map;
 import java.util.Random;
 
-/**
- * Klasa do generowania tokenów uwierzytelniających dla ZegoCloud
- * Bazuje na oficjalnej implementacji TokenServerAssistant
- */
 @Component
 public class ZegoTokenGenerator {
+    private static final Logger logger = LoggerFactory.getLogger(ZegoTokenGenerator.class);
+    private static final String HMAC_SHA256 = "HmacSHA256";
 
-    private static final String VERSION_FLAG = "04";
-    private static final int IV_LENGTH = 16;
-    private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
+    private final ZegoConfig zegoConfig;
 
-    /**
-     * Stałe określające uprawnienia
-     */
-    public static final String PRIVILEGE_LOGIN = "login_room";
-    public static final String PRIVILEGE_PUBLISH = "publish";
-    public static final int PRIVILEGE_ENABLE = 1;
-    public static final int PRIVILEGE_DISABLE = 0;
-
-    @Value("${zego.app-id}")
-    private long appId;
-
-    @Value("${zego.server-secret}")
-    private String serverSecret;
+    @Autowired
+    public ZegoTokenGenerator(ZegoConfig zegoConfig) {
+        this.zegoConfig = zegoConfig;
+    }
 
     /**
-     * Generuje token uwierzytelniający dla ZegoCloud
-     * @param userId ID użytkownika
-     * @param roomId ID pokoju, do którego użytkownik chce dołączyć
-     * @param privileges Mapa uprawnień (klucz -> wartość)
+     * Generuje token dla użytkownika ZEGOCLOUD
+     *
+     * @param userId ID użytkownika w aplikacji
+     * @param roomId ID pokoju
+     * @param privilege Poziom uprawnień (1=tylko subskrypcja, 2=publikowanie)
      * @param effectiveTimeInSeconds Czas ważności tokenu w sekundach
      * @return Wygenerowany token
      */
-    public String generateToken(String userId, String roomId, Map<String, Integer> privileges, int effectiveTimeInSeconds) {
-        // Weryfikacja parametrów
-        if (appId == 0) {
-            throw new IllegalArgumentException("Invalid appId");
-        }
-
-        if (userId == null || userId.isEmpty() || userId.length() > 64) {
-            throw new IllegalArgumentException("userId can't be empty and must be no more than 64 characters");
-        }
-
-        if (serverSecret == null || serverSecret.length() != 32) {
-            throw new IllegalArgumentException("Secret must be 32 characters");
-        }
-
-        if (effectiveTimeInSeconds <= 0) {
-            throw new IllegalArgumentException("effectiveTimeInSeconds must be greater than 0");
-        }
-
+    public String generateToken(String userId, String roomId, int privilege, int effectiveTimeInSeconds) {
         try {
-            // Generowanie losowego IV
-            byte[] ivBytes = new byte[IV_LENGTH];
-            new SecureRandom().nextBytes(ivBytes);
+            long currentTimestamp = System.currentTimeMillis() / 1000;
+            long expireTimestamp = currentTimestamp + effectiveTimeInSeconds;
+            String nonce = generateRandomString(16);
 
-            // Przygotowanie payloadu
-            JSONObject payloadObj = new JSONObject();
-            if (roomId != null && !roomId.isEmpty()) {
-                payloadObj.put("room_id", roomId);
-            }
+            // Przygotowanie ciągu do podpisu
+            String signContent = String.format("%d%s%s%d%s%d",
+                    zegoConfig.getAppId(), userId, roomId, expireTimestamp, nonce, privilege);
 
-            // Dodanie uprawnień
-            if (privileges != null && !privileges.isEmpty()) {
-                JSONObject privilegeObj = new JSONObject();
-                for (Map.Entry<String, Integer> entry : privileges.entrySet()) {
-                    privilegeObj.put(entry.getKey(), entry.getValue());
-                }
-                payloadObj.put("privilege", privilegeObj);
-            }
+            // Obliczenie HMAC-SHA256
+            String signature = hmacSha256(signContent, zegoConfig.getServerSecret());
 
-            // Przygotowanie kompletnego obiektu JSON
-            JSONObject contentJson = new JSONObject();
-            contentJson.put("app_id", appId);
-            contentJson.put("user_id", userId);
+            // Utworzenie tokenu
+            String token = String.format("%d:%s:%s:%d:%s:%d",
+                    zegoConfig.getAppId(), userId, roomId, expireTimestamp, nonce, privilege);
 
-            long nowTime = System.currentTimeMillis() / 1000;
-            long expireTime = nowTime + effectiveTimeInSeconds;
-            contentJson.put("ctime", nowTime);
-            contentJson.put("expire", expireTime);
-            contentJson.put("nonce", new Random().nextInt());
+            // Sklejenie tokenu i podpisu
+            String finalToken = String.format("%s:%s", token, signature);
 
-            // Dodanie payloadu do głównego obiektu JSON
-            if (!payloadObj.isEmpty()) {
-                contentJson.put("payload", payloadObj.toString());
-            } else {
-                contentJson.put("payload", "");
-            }
-
-            String content = contentJson.toString();
-
-            // Szyfrowanie zawartości
-            byte[] contentBytes = encrypt(content.getBytes(StandardCharsets.UTF_8),
-                                         serverSecret.getBytes(StandardCharsets.UTF_8),
-                                         ivBytes);
-
-            // Tworzenie bufora z tokenem
-            ByteBuffer buffer = ByteBuffer.allocate(8 + 2 + ivBytes.length + 2 + contentBytes.length);
-            buffer.order(ByteOrder.BIG_ENDIAN);
-
-            buffer.putLong(expireTime);
-            packBytes(ivBytes, buffer);
-            packBytes(contentBytes, buffer);
-
-            // Kodowanie do Base64
-            return VERSION_FLAG + Base64.getEncoder().encodeToString(buffer.array());
-
+            // Kodowanie Base64
+            return Base64.getEncoder().encodeToString(finalToken.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            throw new RuntimeException("Błąd podczas generowania tokenu: " + e.getMessage(), e);
+            logger.error("Błąd podczas generowania tokenu ZEGO: {}", e.getMessage());
+            throw new RuntimeException("Nie można wygenerować tokenu ZEGO", e);
         }
     }
 
-    private static byte[] encrypt(byte[] content, byte[] secretKey, byte[] ivBytes) throws Exception {
-        if (secretKey == null || secretKey.length != 32) {
-            throw new IllegalArgumentException("Klucz tajny musi mieć 32 bajty");
-        }
-
-        if (ivBytes == null || ivBytes.length != 16) {
-            throw new IllegalArgumentException("IV musi mieć 16 bajtów");
-        }
-
-        if (content == null) {
-            content = new byte[0];
-        }
-
-        SecretKeySpec key = new SecretKeySpec(secretKey, "AES");
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
-
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-
-        return cipher.doFinal(content);
+    private String hmacSha256(String data, String key) throws NoSuchAlgorithmException, InvalidKeyException {
+        Mac sha256Hmac = Mac.getInstance(HMAC_SHA256);
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), HMAC_SHA256);
+        sha256Hmac.init(secretKey);
+        byte[] hmacBytes = sha256Hmac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        return bytesToHex(hmacBytes);
     }
 
-    private static void packBytes(byte[] buffer, ByteBuffer target) {
-        target.putShort((short) buffer.length);
-        target.put(buffer);
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    private String generateRandomString(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder result = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            result.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return result.toString();
     }
 }
