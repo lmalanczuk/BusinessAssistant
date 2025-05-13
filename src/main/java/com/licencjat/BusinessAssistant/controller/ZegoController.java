@@ -1,11 +1,16 @@
 package com.licencjat.BusinessAssistant.controller;
 
 import com.licencjat.BusinessAssistant.entity.Meeting;
+import com.licencjat.BusinessAssistant.entity.Users;
 import com.licencjat.BusinessAssistant.exception.ResourceNotFoundException;
 import com.licencjat.BusinessAssistant.model.MeetingDTO;
 import com.licencjat.BusinessAssistant.model.request.CreateMeetingRequest;
+import com.licencjat.BusinessAssistant.model.request.InstantMeetingRequest;
+import com.licencjat.BusinessAssistant.model.request.JoinRoomRequest;
 import com.licencjat.BusinessAssistant.model.response.ApiResponse;
 import com.licencjat.BusinessAssistant.model.response.TokenResponse;
+import com.licencjat.BusinessAssistant.repository.MeetingRepository;
+import com.licencjat.BusinessAssistant.repository.UserRepository;
 import com.licencjat.BusinessAssistant.security.UserPrincipal;
 import com.licencjat.BusinessAssistant.service.ZegoService;
 import jakarta.validation.Valid;
@@ -19,19 +24,26 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/zego")
+@RequestMapping("/api")
 public class ZegoController {
     private static final Logger logger = LoggerFactory.getLogger(ZegoController.class);
 
     private final ZegoService zegoService;
+    private final MeetingRepository meetingRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ZegoController(ZegoService zegoService) {
+    public ZegoController(ZegoService zegoService, MeetingRepository meetingRepository, UserRepository userRepository) {
         this.zegoService = zegoService;
+        this.meetingRepository = meetingRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -102,6 +114,39 @@ public ResponseEntity<?> createMeeting(@Valid @RequestBody CreateMeetingRequest 
                         (e.getMessage() != null ? e.getMessage() : "Wystąpił nieznany błąd")));
     }
 }
+    @PostMapping("/meetings/instant")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> createInstantMeeting(@RequestBody InstantMeetingRequest request) {
+        try {
+            UserPrincipal userPrincipal = getCurrentUser();
+            if (userPrincipal == null) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "Użytkownik nie jest uwierzytelniony"));
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        int duration = (request.getDurationMinutes() != null && request.getDurationMinutes() > 0)
+                ? request.getDurationMinutes() : 60;
+
+        String title = (request.getTitle() != null && !request.getTitle().isEmpty())
+                ? request.getTitle() : "Natychmiastowe spotkanie";
+
+        Meeting meeting = zegoService.createMeeting(
+                title,
+                now,
+                duration,
+                userPrincipal.getId()
+        );
+
+        MeetingDTO meetingDTO = convertToDTO(meeting);
+        return ResponseEntity.status(HttpStatus.CREATED).body(meetingDTO);
+    } catch (Exception e) {
+        logger.error("Błąd podczas tworzenia natychmiastowego spotkania: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse(false, "Nie można utworzyć spotkania: " + e.getMessage()));
+    }
+}
 
     /**
      * Aktualizuje status spotkania (start/end)
@@ -139,6 +184,62 @@ public ResponseEntity<?> createMeeting(@Valid @RequestBody CreateMeetingRequest 
                     .body(new ApiResponse(false, "Błąd podczas aktualizacji statusu spotkania: " + e.getMessage()));
         }
     }
+    @PostMapping("/meetings/join-by-room")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> joinMeetingByRoomId(@RequestBody JoinRoomRequest request) {
+        try {
+            if (request.getRoomId() == null || request.getRoomId().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "ID pokoju nie może być puste"));
+            }
+
+        UserPrincipal userPrincipal = getCurrentUser();
+        if (userPrincipal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Użytkownik nie jest uwierzytelniony"));
+        }
+
+        // Znajdź spotkanie po roomId
+        Optional<Meeting> meetingOpt = meetingRepository.findByZegoRoomId(request.getRoomId());
+
+        if (!meetingOpt.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, "Nie znaleziono spotkania o podanym ID pokoju"));
+        }
+
+        Meeting meeting = meetingOpt.get();
+
+        // Jeśli użytkownik nie jest uczestnikiem, dodaj go
+        Users user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono użytkownika"));
+
+        meeting.addParticipant(user);
+        meetingRepository.save(meeting);
+
+        // Generowanie tokenu
+        String token = zegoService.generateToken(
+                userPrincipal.getId().toString(),
+                request.getRoomId(),
+                3600 // czas ważności tokenu - 1 godzina
+        );
+
+        // Zwróć odpowiedź z informacjami o spotkaniu i tokenem
+        Map<String, Object> response = new HashMap<>();
+        response.put("meetingId", meeting.getId().toString());
+        response.put("title", meeting.getTitle());
+        response.put("roomId", meeting.getZegoRoomId());
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
+    } catch (ResourceNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(false, e.getMessage()));
+    } catch (Exception e) {
+        logger.error("Błąd podczas dołączania do pokoju: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse(false, "Nie można dołączyć do pokoju: " + e.getMessage()));
+    }
+}
 
     /**
      * Pobiera aktualnego użytkownika z kontekstu bezpieczeństwa

@@ -1,83 +1,155 @@
-// src/app/services/meeting.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { Meeting } from '../models/meeting.model';
-import { Transcription } from '../models/transcription.model';
-import { Invitation } from '../models/invitation.model';
-import { Recording } from '../models/recording.model';
+import { Observable, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import {InstantMeetingRequest} from "../models/requests/instant-meeting-request";
+import {JoinRoomRequest} from "../models/requests/join-room-request";
+
+interface Meeting {
+  id: string;
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  status: 'PLANNED' | 'ONGOING' | 'COMPLETED';
+  participantCount?: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class MeetingService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = 'http://localhost:8080/api/meetings';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
-   * Pobiera wszystkie spotkania użytkownika
+   * Pobiera aktywne spotkanie
    */
-  getMeetings(): Observable<Meeting[]> {
-    return this.http.get<Meeting[]>(`${this.apiUrl}/api/meetings`);
+  getActiveMeeting(): Observable<Meeting | null> {
+    return this.http.get<Meeting | null>(`${this.apiUrl}/active`).pipe(
+      catchError(error => {
+        console.error('Błąd podczas pobierania aktywnego spotkania', error);
+        return of(null);
+      })
+    );
   }
 
   /**
    * Pobiera nadchodzące spotkania
    */
   getUpcomingMeetings(): Observable<Meeting[]> {
-    return this.http.get<Meeting[]>(`${this.apiUrl}/api/meetings/upcoming`);
+    return this.http.get<Meeting[]>(`${this.apiUrl}/upcoming`).pipe(
+      catchError(error => {
+        console.error('Błąd podczas pobierania nadchodzących spotkań', error);
+        return of([]);
+      })
+    );
   }
 
   /**
-   * Pobiera aktywne spotkania
+   * Tworzy nowe spotkanie
    */
-  getActiveMeetings(): Observable<Meeting[]> {
-    return this.http.get<Meeting[]>(`${this.apiUrl}/api/meetings/active`);
+  createMeeting(meetingData: any): Observable<Meeting> {
+    return this.http.post<Meeting>(this.apiUrl, meetingData).pipe(
+      tap(meeting => console.log('Utworzono spotkanie', meeting)),
+      catchError(error => {
+        console.error('Błąd podczas tworzenia spotkania', error);
+        throw error;
+      })
+    );
   }
 
   /**
-   * Pobiera spotkanie według ID
-   * @param meetingId ID spotkania
+   * Tworzy natychmiastowe spotkanie
    */
-  getMeetingById(meetingId: string): Observable<Meeting> {
-    return this.http.get<Meeting>(`${this.apiUrl}/api/meetings/${meetingId}`);
+  createInstantMeeting(): Observable<Meeting> {
+    const request: InstantMeetingRequest = {
+      title: 'Natychmiastowe spotkanie',
+      isInstant: true,
+      durationMinutes: 60
+    };
+    return this.http.post<Meeting>(`${this.apiUrl}/instant`, request).pipe(
+      tap(meeting => console.log('Utworzono natychmiastowe spotkanie', meeting)),
+      catchError(error => {
+        console.error('Błąd podczas tworzenia natychmiastowego spotkania', error);
+        throw error;
+      })
+    );
   }
 
   /**
-   * Pobiera spotkanie według ID pokoju ZEGOCLOUD
-   * @param roomId ID pokoju ZEGOCLOUD
+   * Dołącza do spotkania
    */
-  getMeetingByRoomId(roomId: string): Observable<Meeting | null> {
-    return this.http.get<Meeting | null>(`${this.apiUrl}/api/meetings/room/${roomId}`);
+  joinMeeting(meetingId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${meetingId}/join`, {}).pipe(
+      tap(result => console.log('Dołączono do spotkania', result)),
+      catchError(error => {
+        console.error('Błąd podczas dołączania do spotkania', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Dołącza do spotkania po ID pokoju
+   */
+  joinMeetingByRoomId(roomId: string): Observable<any> {
+    const request: JoinRoomRequest = { roomId };
+    return this.http.post<any>(`${this.apiUrl}/join-by-room`, request).pipe(
+      tap(result => console.log('Dołączono do pokoju', result)),
+      catchError(error => {
+        console.error('Błąd podczas dołączania do pokoju', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Kończy spotkanie
+   */
+  endMeeting(meetingId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${meetingId}/end`, {}).pipe(
+      tap(result => console.log('Zakończono spotkanie', result)),
+      catchError(error => {
+        console.error('Błąd podczas kończenia spotkania', error);
+        throw error;
+      })
+    );
   }
 
   /**
    * Pobiera ostatnie transkrypcje
    */
-  getRecentTranscriptions(): Observable<Transcription[]> {
-    return this.http.get<Transcription[]>(`${this.apiUrl}/api/transcriptions/recent`);
-  }
-
-  /**
-   * Pobiera zaproszenia użytkownika
-   */
-  getInvitations(): Observable<Invitation[]> {
-    return this.http.get<Invitation[]>(`${this.apiUrl}/api/invitations`);
-  }
-
-  /**
-   * Pobiera aktywne spotkanie (obecnie trwające)
-   */
-  getCurrentActiveMeeting(): Observable<Meeting | null> {
-    return this.http.get<Meeting | null>(`${this.apiUrl}/api/meetings/current`);
+  getRecentTranscriptions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/transcriptions/recent`).pipe(
+      catchError(error => {
+        console.error('Błąd podczas pobierania transkrypcji', error);
+        return of([]);
+      })
+    );
   }
 
   /**
    * Pobiera ostatnie nagrania
    */
-  getRecentRecordings(): Observable<Recording[]> {
-    return this.http.get<Recording[]>(`${this.apiUrl}/api/recordings/recent`);
+  getRecentRecordings(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/recordings/recent`).pipe(
+      catchError(error => {
+        console.error('Błąd podczas pobierania nagrań', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Pobiera zaproszenia
+   */
+  getInvitations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/invitations`).pipe(
+      catchError(error => {
+        console.error('Błąd podczas pobierania zaproszeń', error);
+        return of([]);
+      })
+    );
   }
 }
