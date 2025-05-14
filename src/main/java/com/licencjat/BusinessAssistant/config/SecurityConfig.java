@@ -40,10 +40,12 @@ public class SecurityConfig {
     .csrf(csrf -> csrf.disable())
     .cors(cors -> cors.configurationSource(corsConfigurationSource()))
     .authorizeHttpRequests(auth -> auth
-        .requestMatchers(
-            "/api/auth/**"
-        ).permitAll()
-        .anyRequest().authenticated()
+            .requestMatchers(
+                    "/api/auth/**",
+                    "/ws/**",
+                    "/topic/**"
+            ).permitAll()
+            .anyRequest().authenticated()
     )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService), UsernamePasswordAuthenticationFilter.class);
@@ -75,4 +77,6 @@ public class SecurityConfig {
             AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+
 }
