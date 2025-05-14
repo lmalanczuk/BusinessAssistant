@@ -4,9 +4,6 @@
 </div>
 
 <div class="controls">
-  <input type="text" placeholder="Wpisz kod pokoju" [(ngModel)]="roomCode">
-  <label><input type="checkbox" [(ngModel)]="isInitiator"> Jestem inicjatorem</label>
-  <button (click)="join()">Dołącz</button>
   <button (click)="hangUp()">Rozłącz</button>
   <button (click)="toggleMic()">
     {{ isAudioOn ? 'Wycisz mikrofon' : 'Włącz mikrofon' }}

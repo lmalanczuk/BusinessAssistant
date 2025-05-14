@@ -10,11 +10,12 @@ import { Meeting } from '../../models/meeting.model';
 import { Transcription } from '../../models/transcription.model';
 import { Invitation } from '../../models/invitation.model';
 import { Recording } from '../../models/recording.model';
+import {FormsModule} from "@angular/forms";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -32,6 +33,9 @@ export class DashboardComponent implements OnInit {
   isLoading: boolean = false;
   currentDate: Date = new Date();
   randomRoomId: string = this.generateRandomRoomId();
+
+  roomCode: string = '';
+  isInitiator: boolean = false;
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -81,6 +85,20 @@ export class DashboardComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error loading recordings:', error);
+      }
+    });
+  }
+
+  goToVideoCall(): void {
+    if (!this.roomCode) {
+      alert('Wpisz kod spotkania!');
+      return;
+    }
+
+    this.router.navigate(['/video-call'], {
+      queryParams: {
+        room: this.roomCode,
+        initiator: this.isInitiator
       }
     });
   }

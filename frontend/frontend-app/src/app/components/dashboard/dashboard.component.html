@@ -53,19 +53,17 @@
       </div>
 
       <div class="join-meeting-form">
-        <input type="text" placeholder="Wpisz kod spotkania" #roomIdInput>
-        <button class="action-btn" (click)="joinByRoomId(roomIdInput.value)">
+        <input type="text" placeholder="Wpisz kod spotkania" [(ngModel)]="roomCode">
+        <label>
+          <input type="checkbox" [(ngModel)]="isInitiator"> Jestem inicjatorem
+        </label>
+        <button class="action-btn" (click)="goToVideoCall()">
           <i class="fa fa-sign-in-alt"></i>
           Dołącz
         </button>
-
-        <button class="action-btn" routerLink="/video-call">
-          <i class="fa fa-comments"></i>
-          Połączenie wideo
-        </button>
       </div>
+
     </div>
-  </div>
 
   <!-- Nadchodzące spotkania -->
   <div class="upcoming-meetings-section">
