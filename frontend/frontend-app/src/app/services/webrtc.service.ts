@@ -10,15 +10,24 @@ export class WebrtcService {
 
   constructor(private videoService: VideoService) {}
 
-  initLocalMedia(local: HTMLVideoElement, remote: HTMLVideoElement): void {
+  private roomCode: string = '';
+
+  setRoomCode(code: string): void {
+    this.roomCode = code;
+  }
+
+  initLocalMedia(local: HTMLVideoElement, remote: HTMLVideoElement, onReady?: () => void): void {
     this.localVideo = local;
     this.remoteVideo = remote;
 
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
       this.localStream = stream;
       this.localVideo.srcObject = stream;
+      onReady?.();
     });
   }
+
+
 
   async createOffer(): Promise<void> {
     this.peerConnection = this.createPeerConnection();
@@ -27,7 +36,10 @@ export class WebrtcService {
     const offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(offer);
 
-    this.videoService.sendSignal({ type: 'offer', data: offer });
+// loguj i upewnij się, że offer ma type: 'offer'
+    console.log("Stworzona oferta:", offer);
+    this.videoService.sendSignal({ type: 'offer', data: offer }, this.roomCode);
+
   }
 
   handleSignal(signal: any): void {
@@ -51,15 +63,26 @@ export class WebrtcService {
 
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
-    this.videoService.sendSignal({ type: 'answer', data: answer });
+    this.videoService.sendSignal({ type: 'answer', data: answer }, this.roomCode);
+
   }
 
   private async handleAnswer(answer: RTCSessionDescriptionInit): Promise<void> {
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
   }
 
-  private async handleIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
-    await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  private async handleIceCandidate(candidate: any): Promise<void> {
+    if (candidate && candidate.candidate) {
+      await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } else {
+      console.log("Pominięto pustego kandydata ICE (end-of-candidates).");
+    }
+
+  }
+
+
+  hasLocalStream(): boolean {
+    return !!this.localStream;
   }
 
   closeConnection(): void {
@@ -72,14 +95,23 @@ export class WebrtcService {
 
     pc.onicecandidate = event => {
       if (event.candidate) {
-        this.videoService.sendSignal({ type: 'candidate', data: event.candidate });
+        this.videoService.sendSignal({ type: 'candidate', data: event.candidate }, this.roomCode);
       }
     };
+
 
     pc.ontrack = event => {
       this.remoteVideo.srcObject = event.streams[0];
     };
 
     return pc;
+  }
+
+  toggleAudio(enabled: boolean): void {
+    this.localStream?.getAudioTracks().forEach(track => track.enabled = enabled);
+  }
+
+  toggleVideo(enabled: boolean): void {
+    this.localStream?.getVideoTracks().forEach(track => track.enabled = enabled);
   }
 }
