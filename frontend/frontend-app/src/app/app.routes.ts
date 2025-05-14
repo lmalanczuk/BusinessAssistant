@@ -7,6 +7,7 @@ import {RegisterComponent} from "./components/register/register.component";
 import {SummariesComponent} from "./components/summaries/summaries.component";
 import { Routes } from '@angular/router';
 import {AuthGuard} from "./auth.guard";
+import {VideoRoomComponent} from "./components/video-room/video-room.component";
 
 
 export const routes: Routes = [
@@ -48,6 +49,14 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent)
   },
+  {
+    path: 'video',
+    loadComponent: () =>
+      import('./components/video-room/video-room.component').then(
+        (m) => m.VideoRoomComponent
+      ),
+  },
+  { path: '', redirectTo: 'video', pathMatch: 'full' },
 
   // Domyślna ścieżka fallback
   { path: '**', redirectTo: 'dashboard' }
