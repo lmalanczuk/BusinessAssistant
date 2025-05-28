@@ -1,92 +1,100 @@
-.auth-fullscreen-wrapper {
+/* Layout */
+.login-wrapper {
   display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
-  width: 100vw;
-  background-color: #F8F8F8;
-  padding: 1rem;
-  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.auth-box {
-  background: white;
-  padding: 2.5rem 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 450px;
+/* Left Panel */
+.side-panel {
+  flex: 1;
+  background-color: #4A90E2;
   display: flex;
-  flex-direction: column;
-}
-
-.auth-title {
-  text-align: center;
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: #3C3C3C;
-  margin-bottom: 1.5rem;
-}
-
-.auth-form-group {
-  color: #3C3C3C;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1.25rem;
-}
-
-.auth-form-group label {
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.auth-form-group input {
-  padding: 0.6rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-button[type="submit"] {
-  margin-top: 0.5rem;
-  padding: 0.75rem;
-  background: #4A90E2;
+  align-items: center;
+  justify-content: center;
   color: white;
+}
+
+.app-title {
+  font-size: 2.5rem;
   font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
+}
+
+/* Right Panel (Form) */
+.form-panel {
+  flex: 1;
+  background-color: #F8F8F8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-form {
+  background-color: #FFFFFF;
+  border: 1px solid #EDEDED;
+  padding: 2rem 3rem;
+  border-radius: 8px;
   width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
-button[type="submit"]:disabled {
-  background: #aaa;
-  cursor: not-allowed;
-}
-
-.auth-error {
-  color: red;
-  font-size: 0.9rem;
-  text-align: center;
-  margin-top: 0.75rem;
-}
-
-.auth-footer {
-  text-align: center;
-  font-size: 0.9rem;
+.login-form h2 {
+  margin-bottom: 1.5rem;
   color: #3C3C3C;
-  margin-top: 1.5rem;
 }
 
-.auth-footer a {
-  color: #0d47a1;
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #3C3C3C;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #D9E6F2;
+  border-radius: 4px;
+  background-color: #F8F8F8;
+}
+
+/* Buttons and Links */
+.login-button {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #3c7dc2;
+}
+
+.register-link {
+  margin-top: 1rem;
+  text-align: center;
+  color: #3C3C3C;
+}
+
+.register-link a {
+  color: #4A90E2;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.auth-footer a:hover {
-  text-decoration: underline;
+.error-message {
+  color: #c0392b;
+  margin-top: 0.5rem;
 }

@@ -3,7 +3,15 @@
     <h1>Witaj, {{ authService.getUserFullName() || 'Użytkowniku' }}!</h1>
     <p>Dzisiaj jest {{ currentDate | date:'EEEE, d MMMM yyyy' }}</p>
   </div>
+  <div class = "buttons">
   <button class="video-call-button" [routerLink]="['/video']">
-     Dołącz do wideorozmowy
+     Rozpocznij spotkanie
   </button>
+  <button class="video-call-button" [routerLink]="['/video']">
+    Dołącz do spotkania
+  </button>
+  <button class="video-call-button">
+    Zaplanuj spotkanie
+  </button>
+  </div>
 </div>

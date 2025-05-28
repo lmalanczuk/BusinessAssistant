@@ -1,19 +1,31 @@
-<div class="auth-fullscreen-wrapper">
-  <div class="auth-box">
-    <h1 class="auth-title">Business Assistant</h1>
-    <h2 class="auth-form-group">Logowanie</h2>
-    <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form-group">
-      <label>Email</label>
-      <input type="email" formControlName="email" />
+<div class="login-wrapper">
+  <div class="side-panel">
+    <h1 class="app-title">Business Assistant</h1>
+  </div>
+  <div class="form-panel">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
+      <h2>Zaloguj się</h2>
 
-      <label>Hasło</label>
-      <input type="password" formControlName="password" />
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input formControlName="email" type="email" id="email" required />
+      </div>
 
-      <button type="submit" [disabled]="loginForm.invalid">Zaloguj się</button>
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <input formControlName="password" type="password" id="password" required />
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="login-button">Zaloguj się</button>
+
+      <p class="register-link">
+        Nie masz konta?
+        <a (click)="navigateToRegister()">Zarejestruj się</a>
+      </p>
     </form>
-    <p *ngIf="errorMessage" class="auth-error">{{ errorMessage }}</p>
-    <p class="auth-footer">
-      Nie masz konta? <a (click)="navigateToRegister()">Zarejestruj się</a>
-    </p>
   </div>
 </div>

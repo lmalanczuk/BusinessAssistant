@@ -1,31 +1,47 @@
-<div class="auth-fullscreen-wrapper">
-  <div class="auth-box">
-    <h1 class="auth-title">Business Assistant</h1>
-    <h2 class="auth-form-group">Rejestracja</h2>
-    <form [formGroup]="registerForm" (ngSubmit)="register()" class="auth-form-group">
-      <label>Imię</label>
-      <input type="text" formControlName="firstName" />
+<div class="register-wrapper">
+  <div class="side-panel">
+    <h1 class="app-title">Business Assistant</h1>
+  </div>
+  <div class="form-panel">
+    <form [formGroup]="registerForm" (ngSubmit)="register()" class="register-form">
+      <h2>Rejestracja</h2>
 
-      <label>Nazwisko</label>
-      <input type="text" formControlName="lastName" />
+      <div class="form-group">
+        <label for="firstName">Imię</label>
+        <input formControlName="firstName" type="text" id="firstName" required />
+      </div>
 
-      <label>Email</label>
-      <input type="email" formControlName="email" />
+      <div class="form-group">
+        <label for="lastName">Nazwisko</label>
+        <input formControlName="lastName" type="text" id="lastName" required />
+      </div>
 
-      <label>Hasło</label>
-      <input type="password" formControlName="password" />
-      <small *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
-        Hasło jest wymagane
-      </small>
-      <small *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched">
-        Hasło musi mieć co najmniej 8 znaków
-      </small>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input formControlName="email" type="email" id="email" required />
+      </div>
 
-      <button type="submit" [disabled]="registerForm.invalid">Zarejestruj się</button>
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <input formControlName="password" type="password" id="password" required />
+        <small *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
+          Hasło jest wymagane
+        </small>
+        <small *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched">
+          Hasło musi mieć co najmniej 8 znaków
+        </small>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="register-button" [disabled]="registerForm.invalid">Zarejestruj się</button>
+
+      <p class="login-link">
+        Masz już konto?
+        <a [routerLink]="['/login']">Zaloguj się</a>
+      </p>
     </form>
-    <p *ngIf="errorMessage" class="auth-error">{{ errorMessage }}</p>
-    <p class="auth-footer">
-      Masz już konto? <a [routerLink]="['/login']">Zaloguj się</a>
-    </p>
   </div>
 </div>
