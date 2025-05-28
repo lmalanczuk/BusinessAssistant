@@ -2,6 +2,7 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+
 }
 
 .welcome-section {
@@ -9,15 +10,15 @@
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1.8rem;
+    font-size: 2.4rem;
     margin: 0 0 0.5rem 0;
-    color: #333;
+    color: #3C3C3C;
   }
 
   p {
     margin: 0;
     color: #666;
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
 }
 
@@ -27,19 +28,116 @@
 
 .video-call-button {
   margin: 0.5rem;
-  background: #4A90E2;  /* Dopasowanie koloru */
+  background: #4A90E2;
   color: #fff;
   border: none;
-  padding: 20px 100px;
-  font-size: 16px;
+  padding: 20px 30px;
+  font-size: 1.125rem;
   border-radius: 12px;
 
   cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .video-call-button:hover {
-  background: #3C3C3C;  /* Kontrastowy kolor na hover */
+  background: #3C3C3C;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* grid:*/
+.fields {
+  display: grid;
+  /* lewa kolumna 2 jednostki, prawa 1 jednostka */
+  grid-template-columns: 2fr 1fr;
+  /* automatyczna wysokość wiersza, min. 120px */
+  grid-auto-rows: minmax(120px, auto);
+  gap: 1rem;       /* odstęp między polami */
+  margin-top: 1rem;/* odsuwa pola od przycisków */
+}
+
+/* pierwsze pole (Kalendarz) ma zająć obie komórki po lewej */
+.field--calendar {
+  grid-row: span 2;
+}
+
+/* wspólne style „pól” */
+.field {
+  color: #3C3C3C;
+  font-weight: 500;
+  background: #EDEDED;
+  border-radius: 12px;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.field h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.upcoming {
+  /* background: #F8F8F8;     takie samo tło jak inne pola */
+  border-radius: 12px;     /* zaokrąglenia */
+  padding: 1rem 1.5rem;    /* wewnętrzne odstępy */
+  min-height: 150px;
+  font-weight: 500;
+  color: #3C3C3C;
+  margin: 2rem auto 1rem;  /* 2rem nad, 1rem poniżej (przed przyciskami) */
+  max-width: 100%;         /* zajmie całą szerokość kontenera */
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/*meetings*/
+/* pojedynczy wiersz spotkania */
+.upcoming .meeting-item {
+  padding: 0.5rem 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+.upcoming h2 {
+  font-size: 1.5rem;   /* nagłówek „Twoje nadchodzące spotkania” większy */
+}
+/* tytuł – normalna waga */
+.upcoming .meeting-title {
+  font-weight: 400;
+  color: #3C3C3C;
+  /* jedną linię, ale bez przycinania */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.upcoming .meeting-date {
+  font-weight: 400;
+  color: #666;
+  white-space: nowrap;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}
+
+/* dodanie en-dasha przed datą */
+.upcoming .meeting-date::before {
+  content: " – ";
+}
+
+.meeting-avatar-placeholder {
+  margin: 0 auto;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+
+
+  background-color: #D9E6F2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 7rem;
+  flex-shrink: 0;
 }

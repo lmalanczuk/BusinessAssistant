@@ -52,6 +52,20 @@ export class AuthService {
     }
   }
 
+  getUserInitials(): string {
+    const userData = localStorage.getItem('user');
+    if (!userData) return '';
+    try {
+      const { user } = JSON.parse(userData);
+      if (!user) return '';
+      const first = user.firstName?.charAt(0) ?? '';
+      const last  = user.lastName?.charAt(0) ?? '';
+      return (first + last).toUpperCase();
+    } catch {
+      return '';
+    }
+  }
+
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }

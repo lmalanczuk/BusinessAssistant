@@ -3,6 +3,19 @@
     <h1>Witaj, {{ authService.getUserFullName() || 'Użytkowniku' }}!</h1>
     <p>Dzisiaj jest {{ currentDate | date:'EEEE, d MMMM yyyy' }}</p>
   </div>
+
+  <div class="meeting-avatar-placeholder">
+    {{ initials }}
+  </div>
+
+  <div class="upcoming">
+    <h2>Twoje nadchodzące spotkania:</h2>
+    <div class="meeting-item" *ngFor="let meeting of firstThree">
+      <span class="meeting-title">{{ meeting.title }}</span>
+      <span class="meeting-date">{{ meeting.startTime | date:'dd MMM yyyy HH:mm' }}</span>
+    </div>
+  </div>
+
   <div class = "buttons">
   <button class="video-call-button" [routerLink]="['/video']">
      Rozpocznij spotkanie
@@ -14,4 +27,16 @@
     Zaplanuj spotkanie
   </button>
   </div>
-</div>
+
+ <!-- <div class="fields">
+    <div class="field field--calendar">
+      Kalendarz
+    </div>
+    <div class="field field--invitations">
+      Zaproszenia do spotkań
+    </div>
+    <div class="field field--transcripts">
+      Ostatnie transkrypcje
+    </div>
+  </div>-->
+
