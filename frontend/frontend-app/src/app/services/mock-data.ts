@@ -36,27 +36,27 @@ export const MOCK_SUMMARIES = [
     id: '1',
     title: 'Spotkanie Zarządu - Strategia 2024',
     date: '2024-02-20',
-    content: `### Kluczowe tematy
+    content: `Kluczowe tematy
     - Strategia rozwoju na kolejne lata.
     - Budżet na 2024 rok i potencjalne inwestycje.
     - Rozbudowa działów sprzedaży międzynarodowej.
     - Zwiększenie nakładów na działania marketingowe.
 
-    ### Podjęte decyzje
+    Podjęte decyzje
     - Zwiększenie budżetu marketingowego o 20%.
     - Rozszerzenie zespołu sprzedażowego w regionie EMEA.
     - Inwestycje w badania i rozwój nowych technologii.
 
-    ### Zadania do wykonania
+    Zadania do wykonania
     - Przygotowanie raportu z analiz rynkowych.
     - Aktualizacja strategii komunikacji w mediach.
     - Audyt zespołów operacyjnych.
 
-    ### Problemy/ryzyka
+    Problemy/ryzyka
     - Możliwe opóźnienia w realizacji projektu B.
     - Potencjalne trudności w integracji nowych narzędzi z istniejącym systemem IT.
 
-    ### Następne kroki
+    Następne kroki
     - Spotkanie zarządu w kolejnym kwartale.
     - Wdrożenie zmian w strukturze organizacyjnej.
     - Aktualizacja polityki finansowej.`
@@ -65,24 +65,24 @@ export const MOCK_SUMMARIES = [
     id: '2',
     title: 'Planowanie Projektu X',
     date: '2024-02-18',
-    content: `### Zadania do wykonania
+    content: `Zadania do wykonania
     - Przygotowanie szczegółowego harmonogramu wdrożenia.
     - Definiowanie kluczowych zasobów i osób odpowiedzialnych.
     - Przygotowanie dokumentacji projektowej.
 
-    ### Problemy/ryzyka
+    Problemy/ryzyka
     - Możliwe opóźnienia w dostawie sprzętu do testów.
     - Potencjalne problemy z integracją systemów.
 
-    ### Podjęte decyzje
+    Podjęte decyzje
     - Zatwierdzenie budżetu na pierwszy etap projektu.
     - Zatrudnienie dodatkowych specjalistów ds. testów oprogramowania.
 
-    ### Kluczowe tematy
+    Kluczowe tematy
     - Integracja z istniejącymi narzędziami IT.
     - Zwiększenie zaangażowania partnerów biznesowych.
 
-    ### Następne kroki
+    Następne kroki
     - Organizacja szkoleń dla zespołów technicznych.
     - Przeprowadzenie wstępnych testów funkcjonalnych.
     - Przegląd postępów w trakcie kolejnych spotkań statusowych.`

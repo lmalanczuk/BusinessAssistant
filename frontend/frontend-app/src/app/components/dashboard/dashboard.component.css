@@ -26,20 +26,17 @@
 }
 
 .video-call-button {
-  margin-top: 15px;
+  margin: 0.5rem;
   background: #4A90E2;  /* Dopasowanie koloru */
   color: #fff;
   border: none;
-  padding: 20px 40px;
+  padding: 20px 100px;
   font-size: 16px;
   border-radius: 12px;
 
   cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień */
-
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
 }
 
 .video-call-button:hover {

@@ -1,4 +1,4 @@
-<h2 >Meetings (calendar w przyszłości)</h2>
+<h2 >Spotkania (kalendarz w przyszłości)</h2>
 
 <div class="meeting-item" *ngFor="let meeting of meetings">
   <div class="meeting-header">
@@ -7,13 +7,13 @@
   </div>
 
   <div class="meeting-tags">
-    <span class="meeting-tag" [ngClass]="{
+    <!--<span class="meeting-tag" [ngClass]="{
       'tag-planned': meeting.status === 'PLANNED',
       'tag-ongoing': meeting.status === 'ONGOING',
       'tag-completed': meeting.status === 'COMPLETED'
     }">
       {{ meeting.status }}
-    </span>
+    </span>-->
     <span class="meeting-tag" [ngClass]="{
       'tag-zoom': meeting.platform === 'ZOOM',
       'tag-teams': meeting.platform === 'MICROSOFT_TEAMS'
