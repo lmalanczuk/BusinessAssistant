@@ -1,0 +1,14 @@
+<h2>Zaplanuj spotkanie</h2>
+<label>
+  Tytuł:
+  <input [(ngModel)]="title" placeholder="Tytuł spotkania" />
+</label>
+<label>
+  Data i godzina:
+  <input type="datetime-local" [(ngModel)]="startDateTime" />
+</label>
+<label>
+  Czas trwania (min):
+  <input type="number" [(ngModel)]="duration" />
+</label>
+<button (click)="schedule()">Zaplanuj</button>

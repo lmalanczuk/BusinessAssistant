@@ -3,12 +3,15 @@ package com.licencjat.BusinessAssistant.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.licencjat.BusinessAssistant.entity.enums.Platform;
 import com.licencjat.BusinessAssistant.entity.enums.Status;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class MeetingDTO {
 
     @JsonProperty("id")

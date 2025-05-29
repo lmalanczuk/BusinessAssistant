@@ -1,14 +1,13 @@
 package com.licencjat.BusinessAssistant.model.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SummaryResponse {
     @JsonProperty("summaryText")
     private String summaryText;
-
-    public SummaryResponse(String summaryText) {
-        this.summaryText = summaryText;
-    }
 }

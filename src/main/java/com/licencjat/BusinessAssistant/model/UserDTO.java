@@ -2,11 +2,14 @@ package com.licencjat.BusinessAssistant.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.licencjat.BusinessAssistant.entity.enums.Role;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
 
     @JsonProperty("id")

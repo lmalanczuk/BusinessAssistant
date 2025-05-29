@@ -1,11 +1,14 @@
 package com.licencjat.BusinessAssistant.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TranscriptionDTO {
 
     @JsonProperty("id")

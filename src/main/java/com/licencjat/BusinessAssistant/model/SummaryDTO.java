@@ -1,9 +1,12 @@
 package com.licencjat.BusinessAssistant.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SummaryDTO {
         @JsonProperty("meetingId")
         private String meetingId;

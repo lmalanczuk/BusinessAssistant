@@ -1,8 +1,11 @@
 package com.licencjat.BusinessAssistant.model.request;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     private String firstName;

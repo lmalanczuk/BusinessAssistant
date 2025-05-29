@@ -10,33 +10,18 @@
 
   <div class="upcoming">
     <h2>Twoje nadchodzące spotkania:</h2>
-    <div class="meeting-item" *ngFor="let meeting of firstThree">
+    <div
+      class="meeting-item"
+      *ngFor="let meeting of firstThree"
+    >
       <span class="meeting-title">{{ meeting.title }}</span>
       <span class="meeting-date">{{ meeting.startTime | date:'dd MMM yyyy HH:mm' }}</span>
     </div>
   </div>
 
-  <div class = "buttons">
-  <button class="video-call-button" [routerLink]="['/video']">
-     Rozpocznij spotkanie
-  </button>
-  <button class="video-call-button" [routerLink]="['/video']">
-    Dołącz do spotkania
-  </button>
-  <button class="video-call-button">
-    Zaplanuj spotkanie
-  </button>
+  <div class="buttons">
+    <button (click)="startMeeting()">Rozpocznij spotkanie</button>
+    <button (click)="goToJoin()">Dołącz do spotkania</button>
+    <button (click)="goToSchedule()">Zaplanuj spotkanie</button>
   </div>
-
- <!-- <div class="fields">
-    <div class="field field--calendar">
-      Kalendarz
-    </div>
-    <div class="field field--invitations">
-      Zaproszenia do spotkań
-    </div>
-    <div class="field field--transcripts">
-      Ostatnie transkrypcje
-    </div>
-  </div>-->
-
+</div>

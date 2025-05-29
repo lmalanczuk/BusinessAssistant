@@ -1,83 +1,62 @@
 // src/app/services/meeting.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { Meeting } from '../models/meeting.model';
-import { Transcription } from '../models/transcription.model';
-import { Invitation } from '../models/invitation.model';
-import { Recording } from '../models/recording.model';
+import { environment } from '../../environments/environment';  // <-- dokładnie tak
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface MeetingTokenResponse {
+  token: string;
+  roomUrl: string;
+  roomName: string;
+}
+
+export interface Meeting {
+  id: string;
+  title: string;
+  startTime: string;       // ISO 8601
+  endTime: string;         // ISO 8601
+  status: 'PLANNED' | 'ONGOING' | 'COMPLETED';
+  platform: string;
+  dailyRoomName: string;
+  dailyRoomUrl: string;
+}
+
+export interface CreateMeetingRequest {
+  title: string;
+  startTime: string;
+  durationMinutes: number;
+}
+
+export interface JoinMeetingRequest {
+  roomName: string;
+  userName: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class MeetingService {
-  private apiUrl = environment.apiUrl;
+  // Używamy environment.apiUrl, dzięk temu wywołujemy backend na 8080:
+  private base = `${environment.apiUrl}/api/meetings`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  /**
-   * Pobiera wszystkie spotkania użytkownika
-   */
-  getMeetings(): Observable<Meeting[]> {
-    return this.http.get<Meeting[]>(`${this.apiUrl}/api/meetings`);
-  }
-
-  /**
-   * Pobiera nadchodzące spotkania
-   */
+  /** Pobierz nadchodzące spotkania */
   getUpcomingMeetings(): Observable<Meeting[]> {
-    return this.http.get<Meeting[]>(`${this.apiUrl}/api/meetings/upcoming`);
+    return this.http.get<Meeting[]>(`${this.base}/upcoming`);
   }
 
-  /**
-   * Pobiera aktywne spotkania
-   */
-  getActiveMeetings(): Observable<Meeting[]> {
-    return this.http.get<Meeting[]>(`${this.apiUrl}/api/meetings/active`);
+  /** Natychmiastowy start spotkania */
+  startMeeting(req: CreateMeetingRequest): Observable<MeetingTokenResponse> {
+    return this.http.post<MeetingTokenResponse>(`${this.base}/start`, req);
   }
 
-  /**
-   * Pobiera spotkanie według ID
-   * @param meetingId ID spotkania
-   */
-  getMeetingById(meetingId: string): Observable<Meeting> {
-    return this.http.get<Meeting>(`${this.apiUrl}/api/meetings/${meetingId}`);
+  /** Dołącz do istniejącego pokoju */
+  joinMeeting(req: JoinMeetingRequest): Observable<MeetingTokenResponse> {
+    return this.http.post<MeetingTokenResponse>(`${this.base}/join`, req);
   }
 
-  /**
-   * Pobiera spotkanie według ID pokoju ZEGOCLOUD
-   * @param roomId ID pokoju ZEGOCLOUD
-   */
-  getMeetingByRoomId(roomId: string): Observable<Meeting | null> {
-    return this.http.get<Meeting | null>(`${this.apiUrl}/api/meetings/room/${roomId}`);
-  }
-
-  /**
-   * Pobiera ostatnie transkrypcje
-   */
-  getRecentTranscriptions(): Observable<Transcription[]> {
-    return this.http.get<Transcription[]>(`${this.apiUrl}/api/transcriptions/recent`);
-  }
-
-  /**
-   * Pobiera zaproszenia użytkownika
-   */
-  getInvitations(): Observable<Invitation[]> {
-    return this.http.get<Invitation[]>(`${this.apiUrl}/api/invitations`);
-  }
-
-  /**
-   * Pobiera aktywne spotkanie (obecnie trwające)
-   */
-  getCurrentActiveMeeting(): Observable<Meeting | null> {
-    return this.http.get<Meeting | null>(`${this.apiUrl}/api/meetings/current`);
-  }
-
-  /**
-   * Pobiera ostatnie nagrania
-   */
-  getRecentRecordings(): Observable<Recording[]> {
-    return this.http.get<Recording[]>(`${this.apiUrl}/api/recordings/recent`);
+  /** Zaplanuj spotkanie */
+  scheduleMeeting(req: CreateMeetingRequest): Observable<MeetingTokenResponse> {
+    return this.http.post<MeetingTokenResponse>(`${this.base}/schedule`, req);
   }
 }

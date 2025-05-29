@@ -7,3 +7,4 @@ import java.util.UUID;
 
 public interface SummaryRepository extends JpaRepository<Summary, UUID> {
 }
+

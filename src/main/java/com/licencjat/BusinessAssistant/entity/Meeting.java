@@ -39,11 +39,24 @@ public class Meeting {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<Users> participants = new HashSet<>();
 
-    @Column(name = "zego_room_id")
-    private String zegoRoomId;
+   // Dodaj do Meeting.java
+@Column(name = "daily_room_name")
+private String dailyRoomName;
 
-    @Column(name = "zego_stream_id")
-    private String zegoStreamId;
+@Column(name = "daily_room_url")
+private String dailyRoomUrl;
+
+@Column(name = "daily_meeting_id")
+private String dailyMeetingId;
+
+@Column(name = "recording_url")
+private String recordingUrl;
+
+@Column(name = "actual_start_time")
+private LocalDateTime actualStartTime;
+
+@Column(name = "actual_end_time")
+private LocalDateTime actualEndTime;
 
     // Metoda pomocnicza do zarządzania relacją
     public void addParticipant(Users user) {

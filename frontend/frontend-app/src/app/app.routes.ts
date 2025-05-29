@@ -17,7 +17,8 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     canActivate: [AuthGuard],
-    loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent)
+    loadComponent: () =>
+      import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
     path: 'calendar',
@@ -38,6 +39,29 @@ export const routes: Routes = [
     path: 'settings',
     canActivate: [AuthGuard],
     loadComponent: () => import('./components/settings/settings.component').then(m => m.SettingsComponent)
+  },
+
+  // Video (token w query param)
+  {
+    path: 'video',
+    loadComponent: () =>
+      import('./components/video-room/video-room.component').then(m => m.VideoRoomComponent)
+  },
+
+  // Dołączanie
+  {
+    path: 'join',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./components/join-meeting/join-meeting.component').then(m => m.JoinMeetingComponent)
+  },
+
+  // Planowanie
+  {
+    path: 'schedule',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./components/schedule-meeting/schedule-meeting.component').then(m => m.ScheduleMeetingComponent)
   },
 
   // Otwarte ścieżki
