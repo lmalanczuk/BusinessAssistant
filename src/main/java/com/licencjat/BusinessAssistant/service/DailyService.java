@@ -113,8 +113,6 @@ public class DailyService {
         Map<String,Object> props = new HashMap<>();
         props.put("nbf", start.toEpochSecond(ZoneOffset.UTC));
         props.put("exp", start.plusMinutes(duration).toEpochSecond(ZoneOffset.UTC));
-        props.put("privacy", "private");
-
         Map<String,Object> cfgRoom = Map.of("name", roomName, "properties", props);
         HttpEntity<Map<String,Object>> req = new HttpEntity<>(cfgRoom, makeAuthHeaders());
         JsonNode roomData = rt.exchange(
