@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { MeetingService, CreateMeetingRequest } from '../../services/meeting.service';
+import { MeetingService } from '../../services/meeting.service';
 import {FormsModule} from "@angular/forms";
+import {CreateMeetingRequest} from "../../services/dto";
 
 @Component({
   selector: 'app-schedule-meeting',
@@ -10,11 +11,12 @@ import {FormsModule} from "@angular/forms";
   imports: [
     FormsModule
   ],
-  templateUrl: './schedule-meeting.component.html'
+  templateUrl: './schedule-meeting.component.html',
+  styleUrls: ['./schedule-meeting.component.css'],
 })
 export class ScheduleMeetingComponent {
   title = '';
-  startDateTime = '';  // bound to <input type="datetime-local">
+  startDateTime = '';
   duration = 30;
 
   private meetingService = inject(MeetingService);
@@ -32,5 +34,9 @@ export class ScheduleMeetingComponent {
           queryParams: { token: resp.token, url: resp.roomUrl }
         });
       });
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
   }
 }

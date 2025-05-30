@@ -73,14 +73,6 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent)
   },
-  {
-    path: 'video',
-    loadComponent: () =>
-      import('./components/video-room/video-room.component').then(
-        (m) => m.VideoRoomComponent
-      ),
-  },
-  { path: '', redirectTo: 'video', pathMatch: 'full' },
 
   // Domyślna ścieżka fallback
   { path: '**', redirectTo: 'dashboard' }

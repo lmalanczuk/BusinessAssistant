@@ -28,32 +28,47 @@ export class VideoRoomComponent implements OnInit, OnDestroy {
         console.error('Brak roomUrl lub token w queryParams');
       }
     });
+    console.log('video-room init fired');
   }
 
   private async initDaily() {
-    try {
-      // 1) Tworzymy frame bez url i tokenu
-      this.callFrame = DailyIframe.createFrame({
-        showLeaveButton: true,
-        iframeStyle: { width: '100%', height: '100%', border: '0' }
-      });
-      // 2) Dołączamy do pokoju
-      await this.callFrame.join({
-        url: this.roomUrl!,
-        token: this.token!
-      });
-      // 3) Dodajemy iframe do DOM
-      const iframeEl = this.callFrame.iframe();
-      if (iframeEl) {
-        const container = document.getElementById('video-container');
-        container?.appendChild(iframeEl);
-      }
-    } catch (err) {
-      console.error('Błąd inicjalizacji Daily:', err);
-    } finally {
-      this.loading = false;
+    // 1) Znajdź #video-container JUŻ PO wyrenderowaniu widoku
+    const container = document.getElementById('video-container')!;
+    if (!container) {
+      console.error('Nie ma kontenera video-container!');
+      return;
     }
+
+    // 2) Usuń poprzednie instancje (opcjonalnie)
+    document
+      .querySelectorAll('iframe[data-daily-iframe]')
+      .forEach(f => f.remove());
+
+    // 3) Tworzymy callFrame i PODAJEMY parent
+    this.callFrame = DailyIframe.createFrame(
+      container,               // HTMLElement
+      {
+        showLeaveButton: true,
+        iframeStyle: {
+          width: '100%',
+          height: '100%',
+          border: '0',
+          display: 'block'
+        }
+      }
+    );
+
+    // 4) Dołączamy do pokoju
+    await this.callFrame.join({
+      url: this.roomUrl!,
+      token: this.token!
+    });
+
+    // **usuń** tę część:
+    // const iframeEl = this.callFrame.iframe();
+    // container.appendChild(iframeEl);
   }
+
 
   ngOnDestroy(): void {
     if (this.callFrame) {

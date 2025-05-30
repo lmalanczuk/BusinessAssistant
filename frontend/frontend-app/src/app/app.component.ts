@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       const path = event.urlAfterRedirects || event.url;
-      this.showLayout.set(!(path.includes('/login') || path.includes('/register')));
+      this.showLayout.set(!(path.includes('/login') || path.includes('/register')) || path.includes('/video'));
     });
   }
 

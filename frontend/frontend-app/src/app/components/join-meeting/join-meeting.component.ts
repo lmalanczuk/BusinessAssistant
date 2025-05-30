@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { MeetingService, JoinMeetingRequest } from '../../services/meeting.service';
+import { MeetingService } from '../../services/meeting.service';
 import {FormsModule} from "@angular/forms";
+import {JoinMeetingRequest} from "../../services/dto";
 
 @Component({
   selector: 'app-join-meeting',

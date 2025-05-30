@@ -1,8 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { MeetingService, Meeting, CreateMeetingRequest } from '../../services/meeting.service';
+import { MeetingService } from '../../services/meeting.service';
 import { AuthService } from '../../services/auth.service';
+import {CreateMeetingRequest, Meeting} from "../../services/dto";
 
 @Component({
   selector: 'app-dashboard',
