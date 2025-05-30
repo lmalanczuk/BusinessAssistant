@@ -18,7 +18,7 @@ export class VideoRoomComponent implements OnInit, OnDestroy {
   loading = true;
 
   ngOnInit(): void {
-    // Odczytujemy parametry query
+    document.querySelector('.body')?.classList.add('video-open');
     this.route.queryParamMap.subscribe(params => {
       this.roomUrl = params.get('url');
       this.token   = params.get('token');
@@ -32,21 +32,18 @@ export class VideoRoomComponent implements OnInit, OnDestroy {
   }
 
   private async initDaily() {
-    // 1) Znajdź #video-container JUŻ PO wyrenderowaniu widoku
     const container = document.getElementById('video-container')!;
     if (!container) {
       console.error('Nie ma kontenera video-container!');
       return;
     }
 
-    // 2) Usuń poprzednie instancje (opcjonalnie)
     document
       .querySelectorAll('iframe[data-daily-iframe]')
       .forEach(f => f.remove());
 
-    // 3) Tworzymy callFrame i PODAJEMY parent
     this.callFrame = DailyIframe.createFrame(
-      container,               // HTMLElement
+      container,
       {
         showLeaveButton: true,
         iframeStyle: {
@@ -58,19 +55,15 @@ export class VideoRoomComponent implements OnInit, OnDestroy {
       }
     );
 
-    // 4) Dołączamy do pokoju
     await this.callFrame.join({
       url: this.roomUrl!,
       token: this.token!
     });
-
-    // **usuń** tę część:
-    // const iframeEl = this.callFrame.iframe();
-    // container.appendChild(iframeEl);
   }
 
 
   ngOnDestroy(): void {
+    document.querySelector('.body')?.classList.remove('video-open');
     if (this.callFrame) {
       this.callFrame.leave();
       this.callFrame.destroy();

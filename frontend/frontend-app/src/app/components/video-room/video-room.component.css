@@ -1,37 +1,39 @@
 :host {
-  /* usuwamy tło z hosta */
-  background-color: transparent;
   position: fixed;
-  inset: 0;
+  top: 1rem;                              /* 1rem odstępu od góry */
+  left: calc(16rem + 1rem);               /* sidebar (16rem) + 1rem odstępu */
+  right: 1rem;                            /* 1rem od prawej */
+  bottom: 1rem;                           /* 1rem od dołu */
   z-index: 9999;
+
   display: flex;
   justify-content: center;
   align-items: center;
+
+  background-color: rgba(0,0,0,0.5);
+  overflow: hidden;
 }
 
-/* przenieśmy tło tutaj */
 .video-wrapper {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #1a2633; /* teraz tło jest pod iframem */
-  z-index: 1000;
+  /* teraz zajmuje 100% tego obszaru hosta */
+  width: 100%;
+  height: 100%;
+
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  background-color: #1a2633;
 }
 
 #video-container {
-  width: 95vw;
-  height: 95vh;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
-/* upewniamy się, że każde iframe w video-container wypełnia je w całości */
 #video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
   width: 100% !important;
   height: 100% !important;
   display: block;
