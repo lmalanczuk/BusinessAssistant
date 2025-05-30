@@ -11,7 +11,8 @@ import {JoinMeetingRequest} from "../../services/dto";
   imports: [
     FormsModule
   ],
-  templateUrl: './join-meeting.component.html'
+  templateUrl: './join-meeting.component.html',
+  styleUrls: ['./join-meeting.component.css'],
 })
 export class JoinMeetingComponent {
   roomName = '';
@@ -28,5 +29,8 @@ export class JoinMeetingComponent {
           queryParams: { token: resp.token, url: resp.roomUrl }
         });
       });
+  }
+  goBack() {
+    this.router.navigate(['/dashboard']);
   }
 }
