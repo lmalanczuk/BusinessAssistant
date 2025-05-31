@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MOCK_MEETINGS} from "../../services/mock-data";
-import {DatePipe, NgClass, NgForOf} from "@angular/common";
+import {DatePipe, NgClass, NgForOf, NgIf} from "@angular/common";
+import {Meeting} from "../../services/dto";
+import {MeetingService} from "../../services/meeting.service";
+import {AuthService} from "../../services/auth.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-calendar',
@@ -8,24 +12,28 @@ import {DatePipe, NgClass, NgForOf} from "@angular/common";
   imports: [
     NgClass,
     NgForOf,
-    DatePipe
+    DatePipe,
+    NgIf
   ],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
 export class CalendarComponent {
- meetings = MOCK_MEETINGS;
+  meetings: Meeting[] = [];
+  private meetingService = inject(MeetingService);
 
-  formatDate(dateString: string | null): string {
-    if (!dateString) return 'No date available';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).replace(',', '');
+  ngOnInit(): void {
+    // Pobierz nadchodzące spotkania z backendu
+    this.meetingService.getUpcomingMeetings()
+      .subscribe({
+        next: (data: Meeting[]) => this.meetings = data,
+        error: err => console.error('Błąd pobierania spotkań', err)
+      });
   }
 
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Skopiowano: ' + text);
+    });
+  }
 }

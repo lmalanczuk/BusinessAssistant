@@ -6,32 +6,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  max-width: 80%;  /* Zmniejszenie szerokości */
-  margin-left: 0;  /* Brak marginesu z lewej strony */
-  margin-right: auto;  /* Margines po prawej stronie */
+  max-width: 80%;
+  margin-left: 0;
+  margin-right: auto;
   box-sizing: border-box;
   overflow-x: hidden;
-}
-.content-preview, .full-content {
-  margin-top: 10px;
-  color: #333;
-  line-height: 1.6;
-  white-space: pre-wrap;  /* Zachowuje entery i spacje */
-  word-wrap: break-word;  /* Przenosi długie wyrazy */
-}
-
-h3 {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-ul, ol {
-  padding-left: 20px;
-  margin-top: 10px;
-}
-
-li {
-  margin-bottom: 5px;
 }
 
 .expandable-item:hover {
@@ -47,19 +26,20 @@ li {
 }
 
 .title {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: #333;
+  font-size: 1.5rem;       /* większy font */
+  font-weight: 600;        /* spójny z innymi komponentami */
+  color: #3C3C3C;          /* ciemniejszy kolor */
   margin: 0;
 }
 
 .date {
   color: #777;
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 .content-preview {
   margin-top: 10px;
+  font-size: 1rem;         /* większa i czytelniejsza czcionka */
   color: #555;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -68,29 +48,47 @@ li {
 
 .full-content {
   margin-top: 10px;
+  font-size: 1rem;         /* spójny rozmiar czcionki */
   color: #333;
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .toggle-button {
   margin-top: 15px;
-  background: #4A90E2;  /* Dopasowanie koloru */
+  background: #4A90E2;     /* niebieski jak przycisk "Zaplanuj" */
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: 16px 28px;
+  font-size: 1.125rem;     /* większa, spójna czcionka */
   border-radius: 12px;
-
   cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-button:hover {
-  background: #3C3C3C;  /* Kontrastowy kolor na hover */
+  background: #3C3C3C;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Responsywność */
+/* Lista i inne struktury */
+ul, ol {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+h3 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Responsywność bez zmian layoutu */
 @media (max-width: 768px) {
   .expandable-item {
     padding: 15px;

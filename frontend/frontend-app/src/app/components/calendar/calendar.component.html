@@ -1,24 +1,33 @@
-<h2 >Spotkania (kalendarz w przyszłości)</h2>
+<h2 class="calendar-title">Twoje spotkania</h2>
 
 <div class="meeting-item" *ngFor="let meeting of meetings">
   <div class="meeting-header">
     <h3 class="meeting-title">{{ meeting.title }}</h3>
-    <span class="meeting-date">{{ meeting.startTime | date:'dd MMM yyyy HH:mm' }}</span>
+    <span class="meeting-date">{{ meeting.startTime | date:'dd.MM.yyyy HH:mm' }}</span>
   </div>
 
-  <div class="meeting-tags">
-    <!--<span class="meeting-tag" [ngClass]="{
+  <!--<div class="meeting-tags">
+    <span class="meeting-tag" [ngClass]="{
       'tag-planned': meeting.status === 'PLANNED',
       'tag-ongoing': meeting.status === 'ONGOING',
       'tag-completed': meeting.status === 'COMPLETED'
     }">
       {{ meeting.status }}
-    </span>-->
+    </span>
+
     <span class="meeting-tag" [ngClass]="{
-      'tag-zoom': meeting.platform === 'ZOOM',
-      'tag-teams': meeting.platform === 'MICROSOFT_TEAMS'
+      'tag-daily': meeting.platform === 'DAILY',
+      'tag-teams': meeting.platform === 'TEAMS'
     }">
       {{ meeting.platform }}
     </span>
+  </div>-->
+
+  <div class="room-info" *ngIf="meeting.dailyRoomName">
+    <label>Nazwa pokoju:</label>
+    <div class="room-box">
+      <span>{{ meeting.dailyRoomName }}</span>
+      <button (click)="copyToClipboard(meeting.dailyRoomName)" class="copy-button">Kopiuj</button>
+    </div>
   </div>
 </div>

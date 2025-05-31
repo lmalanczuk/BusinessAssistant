@@ -1,3 +1,8 @@
+.calendar-title {
+  font-size: 2.4rem;
+  margin-bottom: 2rem;
+  color: #3C3C3C;
+}
 .meeting-item {
   background: #ffffff;
   padding: 20px;
@@ -24,15 +29,15 @@
 }
 
 .meeting-title {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #3C3C3C;
   margin: 0;
 }
 
 .meeting-date {
   color: #777;
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 .meeting-tags {
@@ -51,25 +56,11 @@
   display: inline-block;
 }
 
-.tag-planned {
-  background: #f4a261;
-}
-
-.tag-ongoing {
-  background: #2a9d8f;
-}
-
-.tag-completed {
-  background: #4CAF50;
-}
-
-.tag-zoom {
-  background: #4A90E2;
-}
-
-.tag-teams {
-  background: #3C3C3C;
-}
+.tag-planned { background: #f4a261; }
+.tag-ongoing { background: #2a9d8f; }
+.tag-completed { background: #4CAF50; }
+.tag-daily { background: #4A90E2; }
+.tag-teams { background: #3C3C3C; }
 
 /* Responsywność */
 @media (max-width: 768px) {
@@ -85,4 +76,35 @@
   .meeting-date {
     margin-top: 5px;
   }
+}
+.room-info {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: #3C3C3C;
+}
+
+.room-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #EDEDED;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+.copy-button {
+  background: transparent;
+  color: #4A90E2;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: 1rem;
+  transition: color 0.2s ease;
+}
+
+.copy-button:hover {
+  color: #3C3C3C;
 }

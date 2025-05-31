@@ -81,3 +81,14 @@
   background: #4A90E2;
   color: #fff;
 }
+.row {
+  display: flex;
+  gap: 20px; /* odstęp między polami */
+  align-items: flex-end; /* wyrównanie do dołu */
+}
+
+.row label {
+  flex: 1; /* równa szerokość obu pól */
+  display: flex;
+  flex-direction: column;
+}
