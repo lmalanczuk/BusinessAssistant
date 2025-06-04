@@ -112,7 +112,10 @@
 .meeting .time {
   color: #666;
   font-size: 0.9rem;
+  margin-left: 2rem;
+  display: inline-block;
 }
+
 
 .actions {
   display: flex;
