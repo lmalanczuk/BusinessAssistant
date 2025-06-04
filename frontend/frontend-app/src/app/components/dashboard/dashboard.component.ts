@@ -3,12 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MeetingService } from '../../services/meeting.service';
 import { AuthService } from '../../services/auth.service';
-import {CreateMeetingRequest, Meeting} from "../../services/dto";
+import {CreateMeetingRequest, JoinMeetingRequest, Meeting} from "../../services/dto";
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MatNativeDateModule} from "@angular/material/core";
+import {MatCard} from "@angular/material/card";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, MatDatepickerModule, MatNativeDateModule, MatCard],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -16,6 +19,7 @@ export class DashboardComponent implements OnInit {
   meetings: Meeting[] = [];
   initials: string = '';
   currentDate: Date = new Date();
+  today: Date = new Date();
   meetingTitle: string = 'Spotkanie';
   duration: number = 30;
 
@@ -52,6 +56,18 @@ export class DashboardComponent implements OnInit {
         });
       },
       error: err => console.error('Błąd startowania spotkania', err)
+    });
+  }
+  join(roomName: string): void {
+    const req: JoinMeetingRequest = {
+      roomName: roomName,
+      userName: this.authService.getUserFullName()
+    };
+
+    this.meetingService.joinMeeting(req).subscribe(resp => {
+      this.router.navigate(['/video'], {
+        queryParams: { token: resp.token, url: resp.roomUrl }
+      });
     });
   }
 

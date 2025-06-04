@@ -8,12 +8,13 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './app/auth.interceptor';
 import {registerLocaleData} from "@angular/common";
 import localePl from '@angular/common/locales/pl';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 registerLocaleData(localePl);
 bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(HttpClientModule),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    provideRouter(routes),  { provide: LOCALE_ID, useValue: 'pl' }
+    provideRouter(routes),  { provide: LOCALE_ID, useValue: 'pl' }, provideAnimationsAsync()
   ]
 }).catch(err => console.error(err));
